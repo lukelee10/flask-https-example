@@ -1,0 +1,57 @@
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number of replicas": 2,
+    "index.mapping.ignore_malformed": true,
+    "analysis": {
+      "analyzer": {
+        "default_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "stop",
+            "my _stemmer"
+          ]
+        },
+        "wordagg_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "stop"
+          ]
+        }
+      },
+      "Filter": {
+        "my_stemmer": {
+          "type": "stemmer",
+          "name": "english"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "dashboard_grouping_code": {
+        "type": "keyword"
+      },
+      "record_location_category": {
+        "type": "keyword"
+      },
+      "record_location_radius": {
+        "type": "keyword"
+      },
+      "record_location_semi_minor": {
+        "type": "keyword"
+      },
+      "record_location_semi_major": {
+        "type": "keyword"
+      },
+      "record_location_orient": {
+        "type": "keyword"
+      },
+      "record_location_elevation": {
+        "type": "keyword"
+      }
+    }
+  }
+}
