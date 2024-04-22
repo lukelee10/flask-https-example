@@ -1,0 +1,17 @@
+urllib3==1.24.2
+werkzeug==2.0.3
+flask==2.0.3
+flask_mail
+python-dateutil
+apscheduler
+numpy
+panda==0.24.0
+elasticsearch7==7.9.1
+elasticsearch-dsl>=7.0.0
+gunicorn
+wheel
+coverage
+Flask-Testing
+uwsgi==2.0.18
+request
+flask_cors

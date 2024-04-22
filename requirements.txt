@@ -1,3 +1,0 @@
-urllib3~=1.26.18
-elasticsearch7~=7.17.9
-Flask~=2.2.5

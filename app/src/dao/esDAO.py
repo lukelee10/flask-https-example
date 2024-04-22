@@ -3,7 +3,7 @@ import os
 
 from typing import Any, Mapping
 
-from elasticsearch7 import Elasticsearch, Urllib3HttpConnection, helpers
+from elasticsearch import Elasticsearch, Urllib3HttpConnection, helpers
 import urllib3
 from app import security
 

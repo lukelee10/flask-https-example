@@ -1,9 +1,11 @@
-from app import app
-from .dao import esDAO
+from flask import Blueprint
 
+from app.src.dao import esDAO
 
-@app.route('/')
-@app.route('/index')
+user_blueprint = Blueprint('user', __name__)
+
+@user_blueprint.route('/', methods=['GET', 'POST'])
+@user_blueprint.route('/index')
 def index():
     user = {'username': 'Miguel'}
     return '''
@@ -16,10 +18,10 @@ def index():
     </body>
 </html>'''
 
-@app.route('/update')
+@user_blueprint.route('/update')
 def update():
     return esDAO.update({"default": {"key3": ""}})
 
-@app.route('/get')
+@user_blueprint.route('/get')
 def get():
     return esDAO.get()
