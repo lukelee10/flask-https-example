@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from app.src.dao import esDAO
+from ..dao import esDAO
 
 user_blueprint = Blueprint('user', __name__)
 

@@ -5,7 +5,7 @@ from typing import Any, Mapping
 
 from elasticsearch import Elasticsearch, Urllib3HttpConnection, helpers
 import urllib3
-from app import security
+from .. import security
 
 
 

@@ -157,7 +157,7 @@ def test_updateSystemsOfGroup():
         .updateSystems0fGroup ("user_dn", "action", "group_record", "selected_systems", "set_default") \
         .thenReturn(True)
 
-    response = r.updateSystems0fGroup("user_dn", "action", "group_record", "selected_systems", "set_default")
+    response = r.updateSystemsOfGroup("user_dn", "action", "group_record", "selected_systems", "set_default")
     assert response == True
 
 def test_setDefaultRecord():
@@ -210,7 +210,7 @@ def test_getTimeSeriesRecords():
         .getTimeSeriesRecords ("user_dn", "test") \
         .thenReturn([])
 
-    response = r.gettimeSeriesRecords("user_dn", "dashboard_id", "false")
+    response = r.getTimeSeriesRecords("user_dn", "dashboard_id", "false")
     assert len(response) == 2
 
 def test_getActiveRecords():
