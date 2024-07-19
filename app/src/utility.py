@@ -39,12 +39,12 @@ def getCredentials(request):
 def getUserDN(request):
     try:
 
-        user_dn = request. headers[' User-Dn']
+        user_dn = request. headers['User-Dn']
         print ("LOG: " + user_dn + " is accessing " + request. url)
         return user_dn
     except Exception as e:
         print ("FAILED TO GET USER_DN. TRYING TO GET DEV DN")
-        user_dn = os. getenv('DEV_USER_DN')
+        user_dn = os.getenv('DEV_USER_DN')
         print("LOG: DEV USER DN " + user_dn + " is accessing " + request.url)
         return user_dn
 

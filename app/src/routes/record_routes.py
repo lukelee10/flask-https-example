@@ -12,6 +12,8 @@ from flask_mail import Mail
 from elasticsearch import RequestError
 import traceback
 
+from ..dao import elastic_setup
+
 record_blueprint = Blueprint("record", __name__)
 
 @record_blueprint.route('/smart/getRecordById', methods=['GET', 'POST' ])
@@ -30,21 +32,27 @@ def getRecordById():
 
 @record_blueprint. route('/smart/getRecordForEdit', methods=['GET', 'POST'])
 def getRecordForEdit():
+	resp = None
 	try:
 		post = utility.getPost (request)
 		user_dn = utility.getUserDN(request)
-		guid = post["guid"]. value
-		system_id = post["system_id"]. value
-		exercise = post["exercise"]. value
-		resp = jsonify(rec. getRecordForEdit (user_dn, system_id, guid, exercise))
+		guid = post.getvalue("guid", "")
+		system_id = post.getvalue("system_id", "")
+		exercise = post.getvalue("exercise", "")
+		if (guid == "" or system_id == "" or exercise == ""):
+			stk = traceback.format_exc()
+			resp = jsonify(errorInfo="missing parameters", system_id=system_id, guid=guid, exer=exercise, stacktrc=stk)
+			resp.status_code = 403
+		else:
+			resp = jsonify(rec. getRecordForEdit (user_dn, system_id, guid, exercise))
 	except RequestError as es3:
-		stk = traceback. format_exc()
+		stk = traceback.format_exc()
 		print(stk, "system_id="+system_id+", guid="+guid+", exer="+exercise)
 		resp = jsonify(errorInfo=es3.info, system_id=system_id, guid=guid, exer=exercise, errStg=str(es3), stacktrc=stk)
-		resp. status_code = es3. status_code
+		resp.status_code = es3.status_code
 	except Exception as es3:
 		print ("GENERAL exceptions", es3, "system_id="+system_id+", guid="+guid+", exer="+exercise)
-		stk = traceback. format_exc()
+		stk = traceback.format_exc()
 		print(stk)
 		resp = jsonify(system_id=system_id, guid=guid, exer=exercise, errStg=str(es3), stacktrc=stk)
 		resp.status_code = 400
@@ -55,7 +63,7 @@ def getRecordForEdit():
 def getRecords():
 	post = utility.getPost (request)
 	user_dn = utility.getUserDN(request)
-	guid = post[" guid"]. value
+	guid = post["guid"].value
 	return jsonify(rec.getRecords (user_dn, guid))
 
 @record_blueprint.route('/smart/getTimeSeriesRecords', methods=['GET', 'POST'])
@@ -209,3 +217,9 @@ def finalAllRecords():
 	user_dn = utility. getUserDN(request)
 	dashboard_id = post[" dashboard_id"]. value
 	return jsonify(rec.finalAllRecords(user_dn, dashboard_id))
+
+@record_blueprint.route('/smart/setup', methods=['GET'])
+def setup():
+	user_dn = utility.getUserDN(request)
+	elastic_setup.setupES(user_dn)
+	return jsonify({"result": 'good'})

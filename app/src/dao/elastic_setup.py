@@ -1,11 +1,13 @@
+from ..dao import esDAO as esDao
 import os
 import traceback
+import json
 
 def setupES(user_dn):
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     ELASTICSEARCH_INDEX = os. getenv('ELASTICSEARCH_INDEX')
 
-    if esDAO. indexExists (user_dn, ELASTICSEARCH_INDEX):
+    if esDao.indexExists (user_dn, ELASTICSEARCH_INDEX):
         print ("run me again")
         # try:
         # print ("delete old index")
@@ -30,10 +32,12 @@ def setupES(user_dn):
             print("creating indexes")
             settings_filepath = BASE_DIR + "/dao/settings/settings.json"
             with open (settings_filepath) as infile:
-                settings = infile.read()
-            esDAO.createIndex(user_dn, ELASTICSEARCH_INDEX, settings)
-            esDAO.createIndex(user_dn, ELASTICSEARCH_INDEX, "_archive", settings)
-            esDAO.createIndex(user_dn, ELASTICSEARCH_INDEX, "_util", settings)
+                ss = infile.read()
+            settings = json.loads(ss)
+
+            esDao.createIndex(user_dn, ELASTICSEARCH_INDEX, settings)
+            esDao.createIndex(user_dn, ELASTICSEARCH_INDEX+ "_archive", settings)
+            esDao.createIndex(user_dn, ELASTICSEARCH_INDEX+ "_util", settings)
         except Exception as e:
             traceback.print_exc()
 
