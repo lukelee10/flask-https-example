@@ -7,14 +7,14 @@ def test_getDashboard():
 		.getDashboard("user_dn", "dashboard_id") \
 		.thenReturn(True)
 
-	response = d.getDashboard ("user_dn", "dashboard id")
+	response = d.getDashboard("user_dn", "dashboard id")
 
 	assert response == True
 
 def test_getDashboardDetails():
-	when (dDao)
-		.getDashboardDetails("user_dn", "dashboard_ id") \
-		.thenReturn(True)
+	when(dDao) \
+	 .getDashboardDetails("user_dn", "dashboard_ id") \
+	 .thenReturn(True)
 
 	response = d. getDashboardDetails ("user_dn", "dashboard_id")
 	assert response == True
@@ -68,7 +68,7 @@ def test_getSystem():
 # assert response == True
 
 def test_getDashboardDetails():
-	when(dDao)
+	when(dDao) \
 		.getDashboardDetails("user_dn", "dashboard_id") \
 		.thenReturn({"dashboard_id": "dashboard_id", "exercise": "false"})
 
@@ -80,13 +80,13 @@ def test_getDashboardDetails():
 		.getFinalTimeSeriesRecords ("user_dn", "dashboard_id") \
 		.thenReturn([])
 
-	when (rDao)
+	when (rDao) \
 		.getActivatedTimeSeriesRecords("user_dn", "dashboard_id") \
 		.thenReturn([])
 
-	when(dDao)
-		.getDashboard("user_dn", "dashboard_id")
-		.thenReturn(("dashboard_id": "dashboard_id", "name": "name", "color": "color"})
+	when(dDao) \
+		.getDashboard("user_dn", "dashboard_id") \
+		.thenReturn({"dashboard_id": "dashboard_id", "name": "name", "color": "color"})
 
 	response = d.getDashboardDetails("user_dn", "dashboard_id")
 	unstub()

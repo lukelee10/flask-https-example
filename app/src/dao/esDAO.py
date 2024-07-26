@@ -76,7 +76,7 @@ def search(user_dn, index, body):
     result = getESClient(user_dn).search(index=index, body=body)
     return result
 
-def searchAndReturnAl1(user_dn, index, body):
+def searchAndReturnAll(user_dn, index, body):
     result = getESClient(user_dn).search(index = index, body=body, scroll="3m")
     return result
 
