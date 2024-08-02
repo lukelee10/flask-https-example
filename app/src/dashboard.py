@@ -61,15 +61,15 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
     if "dashboard_cycle" not in dashboard_json:
         dashboard_json[" dashboard_cycle"] = ""
 
-    dashboard_json[" dashboard_smart_code"] = dashboardDAO.getDashboardGroupingCodeCount(user_dn, dashboard_json["dashboard_grouping_code"])
+    dashboard_json["dashboard_smart_code"] = dashboardDAO.getDashboardGroupingCodeCount(user_dn, dashboard_json["dashboard_grouping_code"])
     dashboard_id = dashboard_json["name"] + "_" + str(uuid.uuid4())  # ES ID of dashboard
-    dashboard_json[" dashboard_id"] = dashboard_id
+    dashboard_json["dashboard_id"] = dashboard_id
 
     if copy_id != "":
         # copy the dashboard
         dashboard_copy = getDashboard(user_dn, copy_id)
-        dashboard_copy[" dashboard_id"] = dashboard_id
-        dashboard_copy[" name"] = dashboard_json["name"]
+        dashboard_copy["dashboard_id"] = dashboard_id
+        dashboard_copy["name"] = dashboard_json["name"]
         dashboard_copy["exercise"] = dashboard_json["exercise"]
         dashboard_json = dashboard_copy
 
@@ -78,8 +78,8 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
         systems = getSystems(user_dn, copy_id)
         for system in systems:
             system = system
-            system_id_old = system[" system_id"]
-            system[" dashboard_id"] = dashboard_id
+            system_id_old = system["system_id"]
+            system["dashboard_id"] = dashboard_id
             system_id = str(uuid.uuid4())
             system["system_id"] = system_id
             dashboardDAO.updateSystem(user_dn, system, system_id)
@@ -189,12 +189,12 @@ def replaceGuidForSystemRecordCopy(obj, record):
             if node ["type" ] == "system":
                 record["system_id"] = node[" system_id"]
                 if "old_guid" in node and record[ "guid"] == node["old_guid"]:
-                    record[ "guid"] = node[" guid"]
+                    record[ "guid"] = node["guid"]
                     del node["old_guid"]
             elif node[" type"] == "group":
                 record[" system_id"] = node["system_id"]
-                if "old guid" in node and record[ "guid"] == node[ "old guid"]:
-                    record["guid"] = node[" guid"]
+                if "old_guid" in node and record[ "guid"] == node[ "old_guid"]:
+                    record["guid"] = node["guid"]
                     del node[ "old_guid"]
                 replaceGuidForSystemRecordCopy(node, record)
             else:
@@ -272,12 +272,12 @@ def updateHierarchy(user_dn, dashboard):
                 print("--updateHierarchy: missing node_id AND adding below:", json.dumps(node, indent=2))
                 node["node_id"] = uuid.uuid4()
             if "guid" not in node or node["guid"] == "":
-                node[" guid"] = str(node["node_id"]).replace('-', '').replace('_', '') + str(uuid.uuid4()).replace('-','').replace('_', '')
+                node["guid"] = str(node["node_id"]).replace('-', '').replace('_', '') + str(uuid.uuid4()).replace('-','').replace('_', '')
             record = findRecord(node["guid"])
             if record is not None:
                 if "record_static_id" in node:
                     record[" record_static_id"] = node["record_static_id"]
-                record["record_path"] = getPath(user_dn, dashboard_json, record[" guid"])
+                record["record_path"] = getPath(user_dn, dashboard_json, record["guid"])
                 record["system_title"] = node["title"]
                 record["system_id"] = node["system_id"]
 
@@ -520,12 +520,12 @@ def setNodeAndSystemGuid(user_dn, dashboard, nodes):
     for node in nodes:
         if "node_id" not in node or node["node_id"] == "":
             node["node_id"] = uuid.uuid4()
-        if "guid" not in node or node[" guid"] == "":
+        if "guid" not in node or node["guid"] == "":
             node[ "guid"] = str(node["node_id"]).replace('-', '').replace('_', '')+ str(uuid. uuid4()).replace('-', ''). replace('-', '')
-        record = findRecord (node[" guid"])
+        record = findRecord (node["guid"])
         if record is not None:
             record["record_static_id"] = node["record_static_id"]
-            record["record_path"] = getPath(user_dn, dashboard, record[" guid"])
+            record["record_path"] = getPath(user_dn, dashboard, record["guid"])
             record["system_title"] = node["title"]
             record["system_id"] = node["system_id"]
 
@@ -537,8 +537,8 @@ def copyNodeAndsystemGuid(obj, copy_records):
             node["node_id"] = uuid.uuid4()
             if "guid" in node:
                 if copy_records == "true": #only create old_guid if copying records records
-                    node ["old_guid"] = node[" guid"]
-                node[" guid"] = str(node["node_id"]).replace('-', '').replace('_', '') + str(uuid. uuid4()).replace('-', ''). replace('_', '')
+                    node ["old_guid"] = node["guid"]
+                node["guid"] = str(node["node_id"]).replace('-', '').replace('_', '') + str(uuid. uuid4()).replace('-', ''). replace('_', '')
             copyNodeAndsystemGuid(node, copy_records)
 
 
@@ -671,9 +671,9 @@ def updateSystemGroupId(nodes):
     for node in nodes:
         if node["type"] == "system":
             if "guid" in node:
-                record = findRecord (node[" guid"])
+                record = findRecord (node["guid"])
                 if record is not None :
-                    record["group_id"] = node[" guid" ]
+                    record["group_id"] = node["guid" ]
 
 
 

@@ -262,5 +262,5 @@ def test_getRecordForEdit():
         .getPath ("user_dn", 0, "guid") \
         .thenReturn(True)
 
-    response = r.getRecordForEdit("user_dn", "system_id", "guid", " " )
+    response = r.getRecordForEdit("user_dn", "system_id", "guid", "" )
     assert len (response) == 2

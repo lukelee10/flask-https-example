@@ -1,7 +1,7 @@
 import traceback
 import json
 import pandas as pd
-from .dao import locationDAO as lDAO
+from .dao import locationsDAO as lDAO
 import re
 import uuid
 

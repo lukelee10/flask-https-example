@@ -1,30 +1,37 @@
+from io import StringIO
+
 from app.src.dao import dashboardDAO as dDao
 from app.src.dao import recordDAO as rDao
+from app.src.dao import locationsDAO as lDao
+from app.src.dao import classificationsDAO as cDao
 from app.src import dashboard as d
-from mockito import when, unstub
+from app.src.dao import systemTypeDAO
+from mockito import when, unstub, any
+import json
 def test_getDashboard():
 	when (dDao) \
 		.getDashboard("user_dn", "dashboard_id") \
 		.thenReturn(True)
 
-	response = d.getDashboard("user_dn", "dashboard id")
+	response = d.getDashboard("user_dn", "dashboard_id")
 
 	assert response == True
 
 def test_getDashboardDetails():
 	when(dDao) \
-	 .getDashboardDetails("user_dn", "dashboard_ id") \
-	 .thenReturn(True)
+		.getDashboardDetails("user_dn", "dashboard_id") \
+		.thenReturn(True)
 
 	response = d. getDashboardDetails ("user_dn", "dashboard_id")
 	assert response == True
 
+
 def test_deleteDashboard():
-	when (dDao) \
+	when(dDao) \
 		.deleteDashboard("user_dn", "dashboard_id") \
 		.thenReturn(True)
 
-	response = d. deleteDashboard ("user_dn", "dashboard_id")[" result"]
+	response = d.deleteDashboard("user_dn", "dashboard_id")["result"]
 	assert response == "delete"
 
 def test_deleteDashboardAndArchive():
@@ -37,15 +44,15 @@ def test_deleteDashboardAndArchive():
 
 def test_getSystems():
 	when (dDao) \
-		.getSystems ("user_dn", "dashboard_id") \
-		.thenReturn(True)
+		.getSystems("user_dn", "dashboard_id") \
+		.thenReturn([])
 
 	response = d.getSystems ("user_dn", "dashboard_id")
-	assert response == True
+	assert response == []
 
 def test_getSystem():
 	when (dDao) \
-		.getSystem(" user_dn", "dashboard_id") \
+		.getSystem("user_dn", "dashboard_id") \
 		.thenReturn(True)
 
 	response = d.getSystem("user_dn", "dashboard_id")
@@ -73,7 +80,7 @@ def test_getDashboardDetails():
 		.thenReturn({"dashboard_id": "dashboard_id", "exercise": "false"})
 
 	when(rDao) \
-		.getTimeSeriesRecords ("user_dn", "dashboard id") \
+		.getTimeSeriesRecords ("user_dn", "dashboard_id") \
 		.thenReturn([])
 
 	when(rDao) \
@@ -96,3 +103,28 @@ def test_getDashboardDetails():
 # def test_getPath():
 # response = d.getPath("user_dn", "dashboard_id", "guid")
 # return response
+
+class MockCGIFieldStorage(object):
+	pass
+def test_uploadDashboard():
+	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
+	when(dDao).updateSystem("user_dn", any).thenReturn(None)
+	when(systemTypeDAO).updateSystemType("user_dn", any, any)
+
+	upload = MockCGIFieldStorage()
+	with open('dashboard.json', 'r') as file:
+		x = file. read()
+		#.rsplit()
+		upload.file = StringIO(x)
+		# StringIO(json.dumps(x))
+
+	when(dDao).createDashboard ("user_dn", any, any).thenReturn(json.loads(x))
+	when(dDao).getDashboardDetails ("user_dn", any).thenReturn(json.loads(x))
+	when(rDao).bulkUpdateRecords ("user_dn", any).thenReturn("done")
+	when(rDao).bulkUpdateArchiveRecords ("user_dn", any).thenReturn("done")
+	when(lDao).updateLocation ("user_dn", any).thenReturn({"location_id": "xyz"})
+	when(cDao).updateClassification("user_dn", any, any).thenReturn({" record_id":"xyz"})
+	# classification, classification_id)
+
+	response = d.uploadDashboard("user_dn", upload)
+	assert [r["system_id"] for r in response["records"]] == [r["system_id"] for r in response["dashboard"]["records"]]

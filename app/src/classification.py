@@ -1,6 +1,6 @@
 import json
 import uuid
-from .dao import classificationDAO as cDAO
+from .dao import classificationsDAO as cDAO
 
 
 def updateClassification (user_dn, classification):
