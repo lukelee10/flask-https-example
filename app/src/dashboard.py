@@ -158,27 +158,31 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
 
 ''''when copying a dashboar, replace ids with new ids or systems'''
 def replaceIdsForSystemCopy(obj, id_old, id_new):
+    mapped = False
     if "nodes" in obj:
         for node in obj["nodes"]:
-            if node[" type"] == "group" or node[" type"] == "system":
+            if node["type"] == "group" or node["type"] == "system":
                 if node["system_id"] == id_old:
-                    node[" system_id"] = id_new
+                    node["system_id"] = id_new
+                    mapped = True
 
-            replaceIdsForSystemCopy(node, id_old, id_new)
+            if replaceIdsForSystemCopy(node, id_old, id_new):
+                mapped = True
+    return mapped
 
 
 '''when copying a dashboard, replace itds with new ids for systems'''
 def replaceIdsForSystemTypeCopy(obj, id_old, id_new):
     if "nodes" in obj:
-        for node in obj[ "nodes"]:
-            if node[" type"] == "system" or node["type"] == "group":
+        for node in obj["nodes"]:
+            if node["type"] == "system" or node["type"] == "group":
                 if "weapon_id" in node:
-                    node[" systemType_id"] = node[" weapon_id"]
+                    node["systemType_id"] = node["weapon_id"]
                     del node[ "weapon_id"]
                 if node["type"] == "group" and "systemType_id" not in node:
-                    node[" systemType_id"] = None
+                    node["systemType_id"] = None
                 if node["systemType_id"] == id_old:
-                    node[" systemType_id"] = id_new
+                    node["systemType_id"] = id_new
             replaceIdsForSystemTypeCopy(node, id_old, id_new)
 
 
@@ -186,13 +190,13 @@ def replaceIdsForSystemTypeCopy(obj, id_old, id_new):
 def replaceGuidForSystemRecordCopy(obj, record):
     if "nodes" in obj:
         for node in obj["nodes"]:
-            if node ["type" ] == "system":
-                record["system_id"] = node[" system_id"]
+            if node ["type"] == "system":
+                record["system_id"] = node["system_id"]
                 if "old_guid" in node and record[ "guid"] == node["old_guid"]:
                     record[ "guid"] = node["guid"]
                     del node["old_guid"]
-            elif node[" type"] == "group":
-                record[" system_id"] = node["system_id"]
+            elif node["type"] == "group":
+                record["system_id"] = node["system_id"]
                 if "old_guid" in node and record[ "guid"] == node[ "old_guid"]:
                     record["guid"] = node["guid"]
                     del node[ "old_guid"]
@@ -276,7 +280,7 @@ def updateHierarchy(user_dn, dashboard):
             record = findRecord(node["guid"])
             if record is not None:
                 if "record_static_id" in node:
-                    record[" record_static_id"] = node["record_static_id"]
+                    record["record_static_id"] = node["record_static_id"]
                 record["record_path"] = getPath(user_dn, dashboard_json, record["guid"])
                 record["system_title"] = node["title"]
                 record["system_id"] = node["system_id"]
@@ -482,7 +486,7 @@ def levelsInsert(itemToInsert, idToInsertInto, levels):
                      "record_static_id": itemToInsert["record_static_id"], "systemType_id": itemToInsert["system_type_id"],
                      "system_id": itemToInsert["system_id"], "title": itemToInsert["name"], "type": "group"})
             elif itemToInsert["type"]. lower() == "system":
-                return levels[index][" nodes"]. append(
+                return levels[index]["nodes"]. append(
                     {"id": itemToInsert["name"], "guid": "", "node_id": "", "nodes": [], "old_guid": "",
                      "record_static_id": itemToInsert["record_static_id"],
                      "systemType_id": itemToInsert["system_type_id"],
@@ -508,7 +512,7 @@ def deepCheck(levels, flag1, flag2, deepCheckErrors):
             flag2 = True
 
         if isinstance(levels[index]["nodes"], list) and len(levels[index]["nodes"]) > 0:
-            deepCheck(levels[index][" nodes"], flag1, flag2, deepCheckErrors)
+            deepCheck(levels[index]["nodes"], flag1, flag2, deepCheckErrors)
 
 
 '''
@@ -521,7 +525,7 @@ def setNodeAndSystemGuid(user_dn, dashboard, nodes):
         if "node_id" not in node or node["node_id"] == "":
             node["node_id"] = uuid.uuid4()
         if "guid" not in node or node["guid"] == "":
-            node[ "guid"] = str(node["node_id"]).replace('-', '').replace('_', '')+ str(uuid. uuid4()).replace('-', ''). replace('-', '')
+            node["guid"] = str(node["node_id"]).replace('-', '').replace('_', '')+ str(uuid. uuid4()).replace('-', ''). replace('-', '')
         record = findRecord (node["guid"])
         if record is not None:
             record["record_static_id"] = node["record_static_id"]
@@ -531,15 +535,20 @@ def setNodeAndSystemGuid(user_dn, dashboard, nodes):
 
 
 
+# regenerate guid and node_id
 def copyNodeAndsystemGuid(obj, copy_records):
+    answer = {}
     if "nodes" in obj:
         for node in obj ["nodes"]:
-            node["node_id"] = uuid.uuid4()
+            new_id = uuid.uuid4()
+            answer.update({node["node_id"]: new_id})
+            node["node_id"] = new_id
             if "guid" in node:
                 if copy_records == "true": #only create old_guid if copying records records
                     node ["old_guid"] = node["guid"]
                 node["guid"] = str(node["node_id"]).replace('-', '').replace('_', '') + str(uuid. uuid4()).replace('-', ''). replace('_', '')
-            copyNodeAndsystemGuid(node, copy_records)
+            answer.update(copyNodeAndsystemGuid(node, copy_records))
+    return answer
 
 
 def updateSystem(user_dn, system):
@@ -595,7 +604,7 @@ def getNodeByValue(obj, field, value):
     val = None
     if "levels" in obj:
         for item in obj["levels"]:
-            tmp = getNodeByValue(item[" nodes"], field, value)
+            tmp = getNodeByValue(item["nodes"], field, value)
             if val is None and tmp is not None:
                 val = tmp
     else:
@@ -641,7 +650,7 @@ def findPath(user_dn, obj, guid, dashboard_id):
         for node in obj["nodes"]:
 
             if "system_id" in node and node["system_id"] is not None and "guid" in node and node["guid"] == guid:
-                if node["type"] == "system" or node[" type"] == "group":
+                if node["type"] == "system" or node["type"] == "group":
                     if "systemType_id" not in node or node["systemType_id"] is None:
                         return node["title"] + "(missing system type)"
                     else:
@@ -649,7 +658,7 @@ def findPath(user_dn, obj, guid, dashboard_id):
                         value = ""
 
                         try:
-                            value = node["title"] + " (" + systemType[" name"] + ")"
+                            value = node["title"] + " (" + systemType["name"] + ")"
                         except Exception as e:
                             print("FAILED TO FIND PATH FOR:")
                             print(node["title"])
@@ -707,25 +716,30 @@ def uploadDashboard (user_dn, upload_file):
     try:
         dashboard = json.load(upload_file.file)
         records = dashboard["records"].copy()
+        archivedRecords = dashboard["record_archive"].copy() if "record_archive" in dashboard else []
         dashboard["name"] = dashboard["name"] + "-I"
         oldSmartCode = dashboard["dashboard_smart_code"]
-        dashboard[" dashboard_ smart_code"] = dashboardDAO.getDashboardGroupingCodeCount(user_dn, dashboard["dashboard_grouping_code"])
-        dashboard_id = dashboard ["name"] + "_" + str(uuid.uuid4()) # ES ID of dashboard
+        dashboard["dashboard_smart_code"] = dashboardDAO.getDashboardGroupingCodeCount(user_dn, dashboard["dashboard_grouping_code"])
+        dashboard_id = dashboard["name"] + "_" + str(uuid.uuid4()) # ES ID of dashboard
 
         #copy the dashboard
         dashboard["dashboard_id"] = dashboard_id
 
 
-        #copy systems
+        #copy systems with new system_id s. cache the last system_id before replacing it.
+        oldSystemID2newSystemID = {}
         systems = dashboard["systems"]
+        answer = {"system_id_translated": {"mapped": [], "not_mapped": []}}
         for system in systems:
             system_id_old = system["system_id"]
             system["dashboard_id"] = dashboard_id
-            system_id = str(uuid.uuid4())
-            system[" system_id"] = system_id
-            dashboardDAO.updateSystem(user_dn, system, system_id)
-            system_id_new = system["system_id"]
-            replaceIdsForSystemCopy(dashboard["levels"][0], system_id_old, system_id_new)
+            system["system_id"] = str(uuid.uuid4())
+            dashboardDAO.updateSystem(user_dn, system, system["system_id"])
+            oldSystemID2newSystemID.update({system_id_old: system["system_id"]})
+            if replaceIdsForSystemCopy(dashboard["levels"][0], system_id_old, system["system_id"]):
+                answer["system_id_translated"]["mapped"].append(system_id_old)
+            else:
+                answer["system_id_translated"]["not_mapped"].append(system_id_old)
 
 
         if "systemTypes" not in dashboard:
@@ -735,7 +749,7 @@ def uploadDashboard (user_dn, upload_file):
 
         for systemType in systemTypes:
             if "weapon_id" in systemType:
-                systemType[" systemType_id"] = systemType[" weapon_id"]
+                systemType["systemType_id"] = systemType["weapon_id"]
                 del systemType["weapon_id"]
             systemType_id_old = systemType["systemType_id"]
             systemType["systemType_id"] = str(uuid.uuid4())
@@ -744,12 +758,14 @@ def uploadDashboard (user_dn, upload_file):
             systemType_id_new = systemType["systemType_id"]
             replaceIdsForSystemTypeCopy(dashboard["levels"][0], systemType_id_old, systemType_id_new)
 
-        copyNodeAndsystemGuid(dashboard["levels"][0], "true")
+        answer.update({"node_guid_translated":
+                           copyNodeAndsystemGuid(dashboard["levels"][0], "true") })
+        oldNodeGui2New = answer["node_guid_translated"]
 
         # pull out data
         if "locations" in dashboard:
             locations = dashboard["locations"].copy()
-            del dashboard[" locations"]
+            del dashboard["locations"]
         else:
             locations = []
 
@@ -776,28 +792,51 @@ def uploadDashboard (user_dn, upload_file):
         if "systemTypes" in dashboard:
             del dashboard["systemTypes"]
         del dashboard["records"]
-
-
-
+        if "records_archive" in dashboard:
+            del dashboard["records_archive"]
 
         dashboard_json = dashboardDAO.createDashboard(user_dn, dashboard, dashboard_id)
 
         # wait for dashboard to be added
         time.sleep(2)
 
+        # cache the last record id before replacing it.
+        oldRecordID2newRecordID = {}
+
+        # massage the records to put in new record_id
         record_series = r.getRecordSeries(user_dn, dashboard_id)
+        answer.update({"record_system_id_translated": 0, "record_guid_translated": 0 })
         for record in records:
             record["dashboard_id"] = dashboard_id
-            record_id = record["record_series"]
-            str(uuid.uuid4())  # ES ID of record
+            record_id = record["record_series"] + "_" + str(uuid.uuid4())  # ES ID of record
+            if len(archivedRecords) == 0:
+                record["tracking_id"] = None
+                record["record_version"] = 1
+            oldRecordID2newRecordID.update({record["record_id"]: record_id})
             record["record_id"] = record_id
-            record["tracking_id"] = None
-            record["record_version"] = 1
             record["record_series"] = record_series
+            # replaceGuidForSystemRecordCopy replaces system_id and guid
+            if "system_id" in record:
+                record["system_id"] = oldSystemID2newSystemID[record["system_id"]]
+                answer["record_system_id_translated"] += 1
+            if "guid" in record and record ["guid"] in oldNodeGui2New:
+                record["guid"] = oldNodeGui2New[record["guid"]]
+                answer["record_guid_translated"] += 1
+
             for item in dashboard["levels"]:
                 replaceGuidForSystemRecordCopy(item, record)
             # rDao.updateRecord (user_dn, record, record_id)
         rDao.bulkUpdateRecords(user_dn, records)
+        answer.update({"recordsSize": len(records), "archivedRecordsSize": len(archivedRecords),
+                       "archivedRecordsNotOriginalRecIDSize": 0, "dashboard": dashboard_json,
+                       "records": records})
+
+        # massage the archive to correct the original_record_id
+        for rec in archivedRecords:
+            if "record_id_original" in rec and rec["record_id_original"] in oldRecordID2newRecordID:
+                rec["record_id_original"] = oldRecordID2newRecordID[rec["record_id_original"]]
+                answer["archivedRecordsNotOriginalRecIDSize"] += 1
+        rDao.bulkUpdateArchiveRecords(user_dn, archivedRecords)
 
         time.sleep(1)  # wait for records to be updated
         flattenHierarchy(dashboard["levels"][0])
@@ -819,15 +858,16 @@ def uploadDashboard (user_dn, upload_file):
 
         #copy helps
         for help in helps:
-            help[" dashboard_id"] = dashboard_id
+            help["dashboard_id"] = dashboard_id
             help_id = str(uuid.uuid4())
             help["help_id"] = help_id
             h.updateHelp(user_dn, help)
 
 
-        return dashboard_json
+        return answer
     except Exception as e:
-        traceback.print_exc()
+        stk = traceback.format_exc()
+        print(stk)
         return {"status": "failed"}
 
 def doCleanUp(user_dn, dashboard_id):

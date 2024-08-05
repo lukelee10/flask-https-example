@@ -1,0 +1,234 @@
+{
+  "dashboard_ id": "ABC country-fleet 123",
+  "dashboard_smart_code": "AB",
+  "dashboard_grouping_code": "AB",
+  "levels": [
+    {
+      "$$hashKey": "object :3884",
+      "id": 1,
+      "nodes": [
+        {
+          "guid": "19ea6840ec25480ea2a97464d893b87fd323e2b79a154d92a8c9189364f1303c",
+          "node_id": "19ea6840-ec25-480e-a2a9-7464d893b87f",
+          "nodes": [
+            {
+              "guid": "8285000768614cfaa383aafaf6e3e7c412e0e16d55d6456db7abe1e9209b4cce",
+              "node_id": "82850007-6861-4cfa-a383-aafaf6e3e7c4",
+              "nodes": [
+                {
+                  "guid": "de8bd786fc0f47c9970f5c820936775e45be1731e8b44267a2e442b8bbbfcd89",
+                  "node_id": "de8bd786-fcof-47c9-970f-5c820936775e",
+                  "nodes": [
+                    {
+                      "guid": "3b5a0b2e60da462d80a15252879c791717b0af2b8cd14a28a199809e23c52f8c",
+                      "node_id": "365a0b2e-60da-462d-80a1-5252879c7917",
+                      "nodes": [
+                        {
+                          "guid": "4a9a9929feee46168d53ffca096f8bf474a03d4fd3ca4321b9d41b9844022af4",
+                          "node_id": "4a9a9929-feee-4616-8d53-ffca096f8bf4",
+                          "nodes": [],
+                          "record_static_id": "10015000094929-01",
+                          "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189",
+                          "system_id": "1234-1",
+                          "title": "TEL-1",
+                          "type": "system"
+                        },
+                        {
+                          "guid": "4a9a2929feee46168d53ffca096f8bf474a03d4fd3ca4321b9d41b9844022af4",
+                          "node_id": "4a9a2929-feee-4616-8d53-ffca096f8bf4",
+                          "nodes": [],
+                          "record_static_id": "10015000094929-02",
+                          "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189",
+                          "system_id": "1234-1",
+                          "title": "TEL-1",
+                          "type": "system"
+                        }
+                      ],
+                      "old_guid": "50424a6f613443fa8edde2b800db4a088b3489bd13a345b88c7c8a34e851657d",
+                      "record_static_id": "10015000003959",
+                      "systemType_id": "7c291662-b6cd-41fe-876c-764b8647ebb7",
+                      "system_id": "A1234-1",
+                      "title": "BMCP-1",
+                      "type": "group"
+                    }
+                  ],
+                  "old_guid": "536eccdb4fdf4cfb868f243866dfca988726a4f53dbc456d911ac17ee3ac5151",
+                  "title": "1st Missile Regiment, GGG (Vvv) MB-1 (BA-1) SS-27",
+                  "type": "unit"
+                }
+              ],
+              "old_guid": "d01bbd89f1eb4f80acb9c87be3395891670d32a380314a89bfedccdb33033c43",
+              "tab_level": true,
+              "title": "14th Missile Division (YYY Ola)",
+              "type": "unit"
+            }
+          ],
+          "old_guid": "db63577e94ab4b98b958a505e2c35e250b4bc3e24d9e418098fba38dd6a77a68",
+          "title": "27th Guards Missile Army - VV-man",
+          "type": "unit"
+        }
+      ],
+      "title": "ABC SRF",
+      "type": "unit"
+    }
+  ],
+  "located_rollup_show": true,
+  "name": "ABC SRF (Mobiles)-I",
+  "operational_rollup_show": false,
+  "record_cycle": "",
+  "rollup_oob": true,
+  "rollup_total_ob": true,
+  "rollup_types": {
+    "BMCP": true,
+    "DMCP": false,
+    "RMCP": true,
+    "SS-25": false,
+    "SS-25 (ERCS)": true,
+    "SS-27 (ERCS)": true,
+    "SS-27 Mod 1": true,
+    "SS-27 Mod 2": true,
+    "SS-27 Mod 3": true,
+    "ULITKA": false
+  },
+  "rollups": [
+    {
+      "$$hashKey": "object:11049",
+      "field": "record_armed",
+      "items": {
+        "no": {
+          "selected": false
+        },
+        " yes": {
+          "selected": true
+        }
+      },
+      "title": "Armed",
+      "type": "radio"
+    },
+    {
+      "$$hashKey": "object:11050",
+      "field": "record_active",
+      "items": {
+        "no": {
+          "selected": false
+        },
+        "yes": {
+          "selected": true
+        }
+      },
+      "title": "Deployed",
+      "type": "radio"
+    },
+    {
+      "$$hashKey": "object:11051",
+      "field": "record_found",
+      "items": {
+        "no": {
+          "selected": false
+        },
+        "yes": {
+          "selected": true
+        }
+      },
+      "title": "Located",
+      "type": "radio"
+    },
+    {
+      "$$hashKey": "object:25868",
+      "field": "record_activity",
+      "items": {
+        "combat_patrol": {
+          "selected": false
+        },
+        "decoy": {
+          "selected": false
+        },
+        "exercise": {
+          "selected": false
+        },
+        "on-alert": {
+          "selected": false
+        },
+        "parade": {
+          "selected": true
+        },
+        "training": {
+          "selected": false
+        }
+      },
+      "title": "Activity",
+      "type": "select"
+    },
+    {
+      "$$hashKey": "object:250997",
+      "field": "record_status",
+      "items": {
+        "combat-generation": {
+          "selected": false
+        },
+        "field-training": {
+          "selected": false
+        },
+        "in-garrison": {
+          "selected": false
+        },
+        "maintenance": {
+          "selected": true
+        },
+        "parade": {
+          "selected ": false
+        }
+      },
+      "title": "Status",
+      "type": "select"
+    }
+  ],
+  "systems":[{
+    "name": "TEL-1",
+    "system_id": "1234-1",
+    "type":"system"
+  },{
+    "name": "BMCP-1",
+    "system_id": "A1234-1",
+    "type": "group"
+  }],
+  "systemTypes": [{
+    "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189"
+  }],
+  "records": [
+    {
+    "dashboard_cycle": "summer",
+    "dashboard_grouping_code": "AB",
+    "dashboard_id": "ABC country-fleet 123",
+    "doc_type": "record",
+    "exercise": true,
+    "group_id": "88a6920d3242490bae04f38a40ed132f6717d6fb51b346cc9cf29026be7975ef",
+    "guid": "8826920d3242490bae04f38a40ed132f6717d6fb51b346cc9cf29026be7975ef",
+    "record_active": "yes",
+    "record_active_classification": "S//REL TO USA, FVEY",
+    "record_activity": "training",
+    "record_activity_classification": "S//REL TO USA, FVEY",
+    "record_armed": "yes",
+    "record_id": "0620AB_9bc78925-fc8d-4264-bb84-d6a2038d4b2c",
+    "record_series": "0620AB",
+    "record_static_id": "10015000094929-01",
+    "system_id": "1234-1"
+  },{
+    "dashboard_cycle": "summer",
+    "dashboard_grouping_code": "AB",
+    "dashboard_id": "ABC country-fleet 123",
+    "doc_type": "record",
+    "exercise": true,
+    "group_id": "88a6919d3242490bae04f38a40ed132f6717d6fb51b346cc9cf29026be7975ef",
+    "guid": "8826919d3242490bae04f38a40ed132f6717d6fb51b346cc9cf29026be7975ef",
+    "record_active": "yes",
+    "record_active_classification": "S//REL TO USA, FVEY",
+    "record_activity": "training",
+    "record_activity_classification": "S//REL TO USA, FVEY",
+    "record_armed": "yes",
+    "record_id": "0620AB_9bc78930-fc8d-4264-bb84-d6a2038d4b2c",
+    "record_series": "0620AB",
+    "record_static_id": "10015000094929-02",
+    "system_id": "1234-1"
+  }]
+}

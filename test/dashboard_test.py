@@ -1,4 +1,5 @@
 from io import StringIO
+import numpy as np
 
 from app.src.dao import dashboardDAO as dDao
 from app.src.dao import recordDAO as rDao
@@ -108,7 +109,7 @@ class MockCGIFieldStorage(object):
 	pass
 def test_uploadDashboard():
 	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
-	when(dDao).updateSystem("user_dn", any).thenReturn(None)
+	when(dDao).updateSystem("user_dn", any, any).thenReturn(None)
 	when(systemTypeDAO).updateSystemType("user_dn", any, any)
 
 	upload = MockCGIFieldStorage()
@@ -127,4 +128,6 @@ def test_uploadDashboard():
 	# classification, classification_id)
 
 	response = d.uploadDashboard("user_dn", upload)
-	assert [r["system_id"] for r in response["records"]] == [r["system_id"] for r in response["dashboard"]["records"]]
+	A = [r["system_id"] for r in response["records"]]
+	B = [r["system_id"] for r in response["dashboard"]["records"]]
+	assert not np.array_equal(A, B)

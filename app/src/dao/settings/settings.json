@@ -1,7 +1,7 @@
 {
   "settings": {
     "number_of_shards": 3,
-    "number of replicas": 2,
+    "number_of_replicas": 2,
     "index.mapping.ignore_malformed": true,
     "analysis": {
       "analyzer": {
@@ -9,8 +9,7 @@
           "tokenizer": "standard",
           "filter": [
             "lowercase",
-            "stop",
-            "my _stemmer"
+            "stop"
           ]
         },
         "wordagg_analyzer": {
@@ -19,12 +18,6 @@
             "lowercase",
             "stop"
           ]
-        }
-      },
-      "Filter": {
-        "my_stemmer": {
-          "type": "stemmer",
-          "name": "english"
         }
       }
     }

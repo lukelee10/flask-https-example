@@ -59,7 +59,8 @@ def getRecordForEdit():
 	finally:
 		return resp
 
-@record_blueprint.route('/smart/getRecords', methods=['GET', 'POST'])
+# given dashboard ID, get all the records.
+@record_blueprint.route('/smart/getRecords', methods=['POST'])
 def getRecords():
 	post = utility.getPost (request)
 	user_dn = utility.getUserDN(request)
