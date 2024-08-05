@@ -158,17 +158,16 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
 
 ''''when copying a dashboar, replace ids with new ids or systems'''
 def replaceIdsForSystemCopy(obj, id_old, id_new):
-    mapped = False
+    mapped_node_ids = []
     if "nodes" in obj:
         for node in obj["nodes"]:
             if node["type"] == "group" or node["type"] == "system":
                 if node["system_id"] == id_old:
                     node["system_id"] = id_new
-                    mapped = True
+                    mapped_node_ids.append(node["node_id"])
 
-            if replaceIdsForSystemCopy(node, id_old, id_new):
-                mapped = True
-    return mapped
+            mapped_node_ids = mapped_node_ids + replaceIdsForSystemCopy(node, id_old, id_new)
+    return mapped_node_ids
 
 
 '''when copying a dashboard, replace itds with new ids for systems'''
@@ -729,17 +728,19 @@ def uploadDashboard (user_dn, upload_file):
         #copy systems with new system_id s. cache the last system_id before replacing it.
         oldSystemID2newSystemID = {}
         systems = dashboard["systems"]
-        answer = {"system_id_translated": {"mapped": [], "not_mapped": []}}
+        answer = {"nodes_translated_system_id": {"mapped": {}, "not_mapped": {}}, "node_ids_mapped": []}
         for system in systems:
             system_id_old = system["system_id"]
             system["dashboard_id"] = dashboard_id
             system["system_id"] = str(uuid.uuid4())
             dashboardDAO.updateSystem(user_dn, system, system["system_id"])
             oldSystemID2newSystemID.update({system_id_old: system["system_id"]})
-            if replaceIdsForSystemCopy(dashboard["levels"][0], system_id_old, system["system_id"]):
-                answer["system_id_translated"]["mapped"].append(system_id_old)
+            mapped_n_ids = replaceIdsForSystemCopy(dashboard["levels"][0], system_id_old, system["system_id"])
+            if len(mapped_n_ids)  > 0:
+                answer["node_ids_mapped"] = answer["node_ids_mapped"] + mapped_n_ids
+                answer["nodes_translated_system_id"]["mapped"].update({system_id_old: system["system_id"]})
             else:
-                answer["system_id_translated"]["not_mapped"].append(system_id_old)
+                answer["nodes_translated_system_id"]["not_mapped"].update({system_id_old: system["system_id"]})
 
 
         if "systemTypes" not in dashboard:
