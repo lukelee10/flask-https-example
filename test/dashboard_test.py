@@ -5,6 +5,7 @@ from app.src.dao import dashboardDAO as dDao
 from app.src.dao import recordDAO as rDao
 from app.src.dao import locationsDAO as lDao
 from app.src.dao import classificationsDAO as cDao
+from app.src.dao import helpDAO as hDao
 from app.src import dashboard as d
 from app.src.dao import systemTypeDAO
 from mockito import when, unstub, any
@@ -114,10 +115,34 @@ def test_uploadDashboard():
 
 	upload = MockCGIFieldStorage()
 	with open('dashboard.json', 'r') as file:
-		x = file. read()
-		#.rsplit()
+		x = file.read()
 		upload.file = StringIO(x)
-		# StringIO(json.dumps(x))
+
+	when(dDao).createDashboard ("user_dn", any, any).thenReturn(json.loads(x))
+	when(dDao).getDashboardDetails ("user_dn", any).thenReturn(json.loads(x))
+	when(rDao).bulkUpdateRecords ("user_dn", any).thenReturn("done")
+	when(rDao).bulkUpdateArchiveRecords ("user_dn", any).thenReturn("done")
+	when(lDao).updateLocation ("user_dn", any).thenReturn({"location_id": "xyz"})
+	when(cDao).updateClassification("user_dn", any, any).thenReturn({" record_id":"xyz"})
+	when(hDao).updateHelp("user_dn", any, any).thenReturn(True)
+	# classification, classification_id)
+
+	response = d.uploadDashboard("user_dn", upload)
+	A = [r["system_id"] for r in response["records"]]
+	B = [r["system_id"] for r in response["dashboard"]["records"]]
+
+	unstub()
+	assert not np.array_equal(A, B)
+
+def test_uploadDashboardMore():
+	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
+	when(dDao).updateSystem("user_dn", any, any).thenReturn(None)
+	when(systemTypeDAO).updateSystemType("user_dn", any, any)
+
+	upload = MockCGIFieldStorage()
+	with open('dashboard_more.json', 'r') as file:
+		x = file.read()
+		upload.file = StringIO(x)
 
 	when(dDao).createDashboard ("user_dn", any, any).thenReturn(json.loads(x))
 	when(dDao).getDashboardDetails ("user_dn", any).thenReturn(json.loads(x))
@@ -130,4 +155,26 @@ def test_uploadDashboard():
 	response = d.uploadDashboard("user_dn", upload)
 	A = [r["system_id"] for r in response["records"]]
 	B = [r["system_id"] for r in response["dashboard"]["records"]]
+	unstub()
 	assert not np.array_equal(A, B)
+
+def test_uploadDashboardError():
+	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
+	when(dDao).updateSystem("user_dn", any, any).thenReturn(None)
+	when(systemTypeDAO).updateSystemType("user_dn", any, any)
+
+	upload = MockCGIFieldStorage()
+	with open('dashboard.json', 'r') as file:
+		x = file.read()
+		upload.file = StringIO(x)
+
+	when(dDao).createDashboard("user_dn", any, any).thenReturn(json.loads(x))
+	when(dDao).getDashboardDetails("user_dn", any).thenReturn(json.loads(x))
+	when(rDao).bulkUpdateRecords("user_dn", any).thenReturn("done")
+	when(rDao).bulkUpdateArchiveRecords("user_dn", any).thenReturn("done")
+	when(lDao).updateLocation("user_dn", any).thenReturn({"location_id": "xyz"})
+	# take off the classificationDao updateHelp mockito..will expect error.
+	# classification, classification_id)
+
+	response = d.uploadDashboard("user_dn", upload)
+	assert response == {"status": "failed"}

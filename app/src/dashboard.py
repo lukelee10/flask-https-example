@@ -774,12 +774,6 @@ def uploadDashboard (user_dn, upload_file):
             classifications = dashboard["classifications"].copy()
             del dashboard["classifications"]
         else:
-            locations = []
-
-        if "classifications" in dashboard:
-            classifications = dashboard["classifications"].copy()
-            del dashboard["classifications"]
-        else:
             classifications = []
 
         if "helps" in dashboard:
@@ -793,8 +787,8 @@ def uploadDashboard (user_dn, upload_file):
         if "systemTypes" in dashboard:
             del dashboard["systemTypes"]
         del dashboard["records"]
-        if "records_archive" in dashboard:
-            del dashboard["records_archive"]
+        if "record_archive" in dashboard:
+            del dashboard["record_archive"]
 
         dashboard_json = dashboardDAO.createDashboard(user_dn, dashboard, dashboard_id)
 

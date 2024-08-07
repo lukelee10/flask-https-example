@@ -797,7 +797,7 @@ def finalAllRecords(user_dn, dashboard_id):
                     record[key] = value
 
             record["comments"] = ""
-            record[" record_version"] = 0  # up record_version
+            record["record_version"] = 0  # up record_version
             record["update_date"] = datetime.datetime.now()
             if "tracking_id" in record:
                 record["tracking_id"] = None

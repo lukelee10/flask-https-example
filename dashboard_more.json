@@ -1,13 +1,7 @@
 {
-  "classifications": [{
-    "dashboard_id": "ABC country-fleet 123"
-  }],
   "dashboard_ id": "ABC country-fleet 123",
   "dashboard_smart_code": "AB",
   "dashboard_grouping_code": "AB",
-  "helps": [{
-    "dashboard_id": "ABC country-fleet 123"
-  }],
   "levels": [
     {
       "$$hashKey": "object :3884",
@@ -79,9 +73,6 @@
     }
   ],
   "located_rollup_show": true,
-  "locations": [{
-    "dashboard_id": "ABC country-fleet 123"
-  }],
   "name": "ABC SRF (Mobiles)-I",
   "operational_rollup_show": false,
   "record_cycle": "",
@@ -238,6 +229,27 @@
     "record_id": "0620AB_9bc78930-fc8d-4264-bb84-d6a2038d4b2c",
     "record_series": "0620AB",
     "record_static_id": "10015000094929-02",
-    "system_id": "1234-1"
+    "system_id": "1234-1",
+    "record_version": 2
+  }],
+  "record_archive": [{
+    "dashboard_cycle": "summer",
+    "dashboard_grouping_code": "AB",
+    "dashboard_id": "ABC country-fleet 123",
+    "doc_type": "record",
+    "exercise": true,
+    "group_id": "365a0b2e-60da-462d-80a1-5252879c7917",
+    "guid": "4a9a2929-feee-4616-8d53-ffca096f8bf4",
+    "record_active": "yes",
+    "record_active_classification": "S//REL TO USA, FVEY",
+    "record_activity": "training",
+    "record_activity_classification": "S//REL TO USA, FVEY",
+    "record_armed": "yes",
+    "record_id": "0620AB_9bc78930-fc8d-4264-bb84-d6a2038d4b2c",
+    "record_id_original": "0620AB_9bc78930-fc8d-4264-bb84-d6a2038d4b2c",
+    "record_series": "0620AB",
+    "record_static_id": "10015000094929-02",
+    "system_id": "1234-1",
+    "record_version": 1
   }]
 }
