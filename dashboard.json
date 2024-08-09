@@ -36,7 +36,7 @@
                           "record_static_id": "10015000094929-01",
                           "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189",
                           "system_id": "1234-1",
-                          "title": "TEL-1",
+                          "title": "sys-1",
                           "type": "system"
                         },
                         {
@@ -46,13 +46,13 @@
                           "record_static_id": "10015000094929-02",
                           "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189",
                           "system_id": "1234-1",
-                          "title": "TEL-1",
+                          "title": "sys-2",
                           "type": "system"
                         }
                       ],
                       "old_guid": "50424a6f613443fa8edde2b800db4a088b3489bd13a345b88c7c8a34e851657d",
                       "record_static_id": "10015000003959",
-                      "systemType_id": "7c291662-b6cd-41fe-876c-764b8647ebb7",
+                      "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189",
                       "system_id": "A1234-1",
                       "title": "BMCP-1",
                       "type": "group"
@@ -193,16 +193,23 @@
     }
   ],
   "systems":[{
+    "dashboard_id": "ABC country-fleet 123",
     "name": "TEL-1",
     "system_id": "1234-1",
-    "type":"system"
+    "type":"system",
+    "doc_type": "systems"
   },{
+    "dashboard_id": "ABC country-fleet 123",
     "name": "BMCP-1",
     "system_id": "A1234-1",
-    "type": "group"
+    "type": "group",
+    "doc_type": "systems"
   }],
   "systemTypes": [{
-    "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189"
+    "dashboard_id": "ABC country-fleet 123",
+    "name": "syste-type",
+    "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189",
+    "doc_type": "systemTypes"
   }],
   "records": [
     {
@@ -211,17 +218,19 @@
     "dashboard_id": "ABC country-fleet 123",
     "doc_type": "record",
     "exercise": true,
-    "group_id": "365a0b2e-60da-462d-80a1-5252879c7917",
-    "guid": "4a9a9929-feee-4616-8d53-ffca096f8bf4",
+    "group_id": "4a9a9929feee46168d53ffca096f8bf474a03d4fd3ca4321b9d41b9844022af4",
+    "guid": "4a9a9929feee46168d53ffca096f8bf474a03d4fd3ca4321b9d41b9844022af4",
     "record_active": "yes",
     "record_active_classification": "S//REL TO USA, FVEY",
     "record_activity": "training",
     "record_activity_classification": "S//REL TO USA, FVEY",
     "record_armed": "yes",
     "record_id": "0620AB_9bc78925-fc8d-4264-bb84-d6a2038d4b2c",
+    "record_path": "27th Guards Missile Army - VV-man/14th Missile Division (YYY Ola)/1st Missile Regiment, GGG (Vvv) MB-1 (BA-1) SS-27/BMCP-1/sys-1(syste-type)",
     "record_series": "0620AB",
     "record_static_id": "10015000094929-01",
-    "system_id": "1234-1"
+    "system_id": "1234-1",
+    "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189"
   },{
     "dashboard_cycle": "summer",
     "dashboard_grouping_code": "AB",
@@ -229,15 +238,17 @@
     "doc_type": "record",
     "exercise": true,
     "group_id": "365a0b2e-60da-462d-80a1-5252879c7917",
-    "guid": "4a9a2929-feee-4616-8d53-ffca096f8bf4",
+    "guid": "4a9a2929feee46168d53ffca096f8bf474a03d4fd3ca4321b9d41b9844022af4",
     "record_active": "yes",
     "record_active_classification": "S//REL TO USA, FVEY",
     "record_activity": "training",
     "record_activity_classification": "S//REL TO USA, FVEY",
     "record_armed": "yes",
     "record_id": "0620AB_9bc78930-fc8d-4264-bb84-d6a2038d4b2c",
+    "record_path": "27th Guards Missile Army - VV-man/14th Missile Division (YYY Ola)/1st Missile Regiment, GGG (Vvv) MB-1 (BA-1) SS-27/BMCP-1/sys-2(syste-type)",
     "record_series": "0620AB",
     "record_static_id": "10015000094929-02",
-    "system_id": "1234-1"
+    "system_id": "1234-1",
+    "systemType_id": "43bd1ab1-3306-463f-b40a-aee9ba80a189"
   }]
 }
