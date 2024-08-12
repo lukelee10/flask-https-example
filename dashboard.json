@@ -2,7 +2,7 @@
   "classifications": [{
     "dashboard_id": "ABC country-fleet 123"
   }],
-  "dashboard_ id": "ABC country-fleet 123",
+  "dashboard_id": "ABC country-fleet 123",
   "dashboard_smart_code": "AB",
   "dashboard_grouping_code": "AB",
   "helps": [{
@@ -107,7 +107,7 @@
         "no": {
           "selected": false
         },
-        " yes": {
+        "yes": {
           "selected": true
         }
       },
@@ -185,7 +185,7 @@
           "selected": true
         },
         "parade": {
-          "selected ": false
+          "selected": false
         }
       },
       "title": "Status",

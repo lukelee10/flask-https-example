@@ -59,7 +59,7 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
 
 
     if "dashboard_cycle" not in dashboard_json:
-        dashboard_json[" dashboard_cycle"] = ""
+        dashboard_json["dashboard_cycle"] = ""
 
     dashboard_json["dashboard_smart_code"] = dashboardDAO.getDashboardGroupingCodeCount(user_dn, dashboard_json["dashboard_grouping_code"])
     dashboard_id = dashboard_json["name"] + "_" + str(uuid.uuid4())  # ES ID of dashboard

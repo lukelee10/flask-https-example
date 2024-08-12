@@ -8,8 +8,9 @@ from app.src.dao import classificationsDAO as cDao
 from app.src.dao import helpDAO as hDao
 from app.src import dashboard as d
 from app.src.dao import systemTypeDAO
-from mockito import when, unstub, any
+from mockito import when, unstub, any, patch
 import json
+import uuid
 def test_getDashboard():
 	when (dDao) \
 		.getDashboard("user_dn", "dashboard_id") \
@@ -106,6 +107,10 @@ def test_getDashboardDetails():
 # response = d.getPath("user_dn", "dashboard_id", "guid")
 # return response
 
+# copied the first part of  uploadDashboard
+def massageThis(x, dashboard, y):
+	return dashboard
+
 class MockCGIFieldStorage(object):
 	pass
 def test_uploadDashboard():
@@ -118,7 +123,7 @@ def test_uploadDashboard():
 		x = file.read()
 		upload.file = StringIO(x)
 
-	when(dDao).createDashboard ("user_dn", any, any).thenReturn(json.loads(x))
+	patch(dDao, "createDashboard", massageThis)
 	when(dDao).getDashboardDetails ("user_dn", any).thenReturn(json.loads(x))
 	when(rDao).bulkUpdateRecords ("user_dn", any).thenReturn("done")
 	when(rDao).bulkUpdateArchiveRecords ("user_dn", any).thenReturn("done")
@@ -144,7 +149,7 @@ def test_uploadDashboardMore():
 		x = file.read()
 		upload.file = StringIO(x)
 
-	when(dDao).createDashboard ("user_dn", any, any).thenReturn(json.loads(x))
+	patch(dDao, "createDashboard", massageThis)
 	when(dDao).getDashboardDetails ("user_dn", any).thenReturn(json.loads(x))
 	when(rDao).bulkUpdateRecords ("user_dn", any).thenReturn("done")
 	when(rDao).bulkUpdateArchiveRecords ("user_dn", any).thenReturn("done")
@@ -168,7 +173,7 @@ def test_uploadDashboardError():
 		x = file.read()
 		upload.file = StringIO(x)
 
-	when(dDao).createDashboard("user_dn", any, any).thenReturn(json.loads(x))
+	patch(dDao, "createDashboard", massageThis)
 	when(dDao).getDashboardDetails("user_dn", any).thenReturn(json.loads(x))
 	when(rDao).bulkUpdateRecords("user_dn", any).thenReturn("done")
 	when(rDao).bulkUpdateArchiveRecords("user_dn", any).thenReturn("done")
