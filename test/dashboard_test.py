@@ -1,5 +1,6 @@
 from io import StringIO
 import numpy as np
+import traceback
 
 from app.src.dao import dashboardDAO as dDao
 from app.src.dao import recordDAO as rDao
@@ -130,20 +131,36 @@ class MockCGIFieldStorage(object):
 
 
 def test_createDashboard():
+	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
 	x = open("dashboard.json").read()
-	response = d.createDashboard("user_dn", x, "ABC country-fleet 123", "true")
+	original_dash = json.loads(x)
+	when(dDao).getDashboard("user_dn", any).thenReturn(original_dash)
+	when(rDao).getRecords("user_dn", any).thenReturn(original_dash) # use the records key inside the orginal_dash.  the rest please ignore it
+	when(rDao).updateRecord("user_dn", any, any).thenReturn("done") # saves the new records back into ES
+	when(lDao).getLocations("user_dn", any).thenReturn(original_dash["locations"])
+	when(lDao).updateLocation("user_dn", any).thenReturn({"location_id": "xyz"})
+	when(cDao).getClassifications("user_dn", any).thenReturn(original_dash["classifications"])
+	when(cDao).updateClassification("user_dn", any, any).thenReturn({"record_id": "xyz"})
+	when(hDao).getHelps("user_dn", any).thenReturn(original_dash) # use the helps key inside the orginal_dash.  the rest please ignore it
+	when(hDao).updateHelp("user_dn", any, any).thenReturn(True)
+	patch(dDao, "createDashboard", massage_dashboard)
+	try:
+		response = d.createDashboard("user_dn", x, "ABC country-fleet 123", "true")
+	except Exception as e:
+		stk = traceback.format_exc()
+		print(stk)
 	assert response != None
-
+	unstub()
 
 def test_uploadDashboard():
 	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
 	when(dDao).updateSystem("user_dn", any, any).thenReturn(None)
 	when(systemTypeDAO).updateSystemType("user_dn", any, any)
 
-
+	upload = MockCGIFieldStorage()
 	with open('dashboard.json', 'r') as file:
 		x = file.read()
-
+		upload.file = StringIO(x)
 
 	patch(dDao, "createDashboard", massage_dashboard)
 	patch(dDao, "getDashboardDetails", get_massaged_dashboard)

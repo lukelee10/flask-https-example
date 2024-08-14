@@ -99,7 +99,7 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
             replaceIdsForSystemTypeCopy(dashboard_json["levels"][0], systemType_id_old, systemType_id_new)
 
 
-        copyNodeAndsystemGuid(dashboard_json["levels"][0], systemType_id_old, systemType_id_new)
+        copyNodeAndsystemGuid(dashboard_json["levels"][0], copy_records)
 
         if copy_records == "true":
             records = r.getRecords(user_dn, copy_id)
