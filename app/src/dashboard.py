@@ -107,7 +107,7 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
             for record in records["records"]:
                 record = record
                 record["exercise"] = True
-                record[" dashboard_id"] = dashboard_id
+                record["dashboard_id"] = dashboard_id
                 record_id = record["record_series"] + str(uuid.uuid4())  # ES ID of record
                 record["record_id"] = record_id
                 for item in dashboard_json["levels"]:
@@ -172,6 +172,7 @@ def replaceIdsForSystemCopy(obj, id_old, id_new):
 
 '''when copying a dashboard, replace itds with new ids for systems'''
 def replaceIdsForSystemTypeCopy(obj, id_old, id_new):
+    mapped_node_ids = []
     if "nodes" in obj:
         for node in obj["nodes"]:
             if node["type"] == "system" or node["type"] == "group":
@@ -182,7 +183,9 @@ def replaceIdsForSystemTypeCopy(obj, id_old, id_new):
                     node["systemType_id"] = None
                 if node["systemType_id"] == id_old:
                     node["systemType_id"] = id_new
-            replaceIdsForSystemTypeCopy(node, id_old, id_new)
+                    mapped_node_ids.append(node["node_id"])
+            mapped_node_ids = mapped_node_ids + replaceIdsForSystemTypeCopy(node, id_old, id_new)
+    return mapped_node_ids
 
 
 '''copying a dashboard, replace ids with new ids for systems and systemType systems'''
@@ -540,12 +543,12 @@ def copyNodeAndsystemGuid(obj, copy_records):
     if "nodes" in obj:
         for node in obj ["nodes"]:
             new_id = uuid.uuid4()
-            answer.update({node["node_id"]: new_id})
             node["node_id"] = new_id
             if "guid" in node:
                 if copy_records == "true": #only create old_guid if copying records records
-                    node ["old_guid"] = node["guid"]
+                    node["old_guid"] = node["guid"]
                 node["guid"] = str(node["node_id"]).replace('-', '').replace('_', '') + str(uuid. uuid4()).replace('-', ''). replace('_', '')
+                answer.update({node["old_guid"]: node["guid"]})
             answer.update(copyNodeAndsystemGuid(node, copy_records))
     return answer
 
@@ -748,6 +751,8 @@ def uploadDashboard (user_dn, upload_file):
         else:
             systemTypes = dashboard["systemTypes"]
 
+        oldSystemTypeID2newSystemTypeID = {}
+        answer.update({"nodes_translated_systemType_id": {"mapped": {}, "not_mapped": {}}, "node_ids_mapped_sysTyp": []})
         for systemType in systemTypes:
             if "weapon_id" in systemType:
                 systemType["systemType_id"] = systemType["weapon_id"]
@@ -756,8 +761,13 @@ def uploadDashboard (user_dn, upload_file):
             systemType["systemType_id"] = str(uuid.uuid4())
             systemType["dashboard_id"] = dashboard_id
             systemType = sysType.updateSystemType(user_dn, json.dumps(systemType))
-            systemType_id_new = systemType["systemType_id"]
-            replaceIdsForSystemTypeCopy(dashboard["levels"][0], systemType_id_old, systemType_id_new)
+            oldSystemTypeID2newSystemTypeID.update({systemType_id_old: systemType["systemType_id"]})
+            mapped_n_ids = replaceIdsForSystemTypeCopy(dashboard["levels"][0], systemType_id_old, systemType["systemType_id"])
+            if len(mapped_n_ids) > 0:
+                answer["node_ids_mapped_sysTyp"] = answer["node_ids_mapped_sysTyp"] + mapped_n_ids
+                answer["nodes_translated_systemType_id"]["mapped"].update({systemType_id_old: systemType["systemType_id"]})
+            else:
+                answer["nodes_translated_systemType_id"]["not_mapped"].update({systemType_id_old: systemType["systemType_id"]})
 
         answer.update({"node_guid_translated":
                            copyNodeAndsystemGuid(dashboard["levels"][0], "true") })
@@ -800,7 +810,7 @@ def uploadDashboard (user_dn, upload_file):
 
         # massage the records to put in new record_id
         record_series = r.getRecordSeries(user_dn, dashboard_id)
-        answer.update({"record_system_id_translated": 0, "record_guid_translated": 0 })
+        answer.update({"record_system_id_translated": 0, "record_guid_translated": 0, "record_systemType_id_translated": 0 })
         for record in records:
             record["dashboard_id"] = dashboard_id
             record_id = record["record_series"] + "_" + str(uuid.uuid4())  # ES ID of record
@@ -814,6 +824,9 @@ def uploadDashboard (user_dn, upload_file):
             if "system_id" in record:
                 record["system_id"] = oldSystemID2newSystemID[record["system_id"]]
                 answer["record_system_id_translated"] += 1
+            if "systemType_id" in record:
+                record["systemType_id"] = oldSystemTypeID2newSystemTypeID[record["systemType_id"]]
+                answer["record_systemType_id_translated"] += 1
             if "guid" in record and record ["guid"] in oldNodeGui2New:
                 record["guid"] = oldNodeGui2New[record["guid"]]
                 answer["record_guid_translated"] += 1

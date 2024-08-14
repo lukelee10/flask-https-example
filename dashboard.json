@@ -5,6 +5,7 @@
   "dashboard_id": "ABC country-fleet 123",
   "dashboard_smart_code": "AB",
   "dashboard_grouping_code": "AB",
+  "exercise": false,
   "helps": [{
     "dashboard_id": "ABC country-fleet 123"
   }],

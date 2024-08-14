@@ -107,37 +107,92 @@ def test_getDashboardDetails():
 # response = d.getPath("user_dn", "dashboard_id", "guid")
 # return response
 
+tugged_dash = [None]
 # copied the first part of  uploadDashboard
-def massageThis(x, dashboard, y):
+def massage_dashboard(x, dashboard, y):
+	tugged_dash[0] = dashboard
 	return dashboard
+
+
+def get_massaged_dashboard(user_dn, dashboard_id):
+	return tugged_dash[0]
+
+def get_leaves(obj_list, attribute_name):
+	ans = []
+	for r in obj_list:
+		if attribute_name in r:
+			ans.append(r[attribute_name])
+		ans = ans + get_leaves(r["nodes"], attribute_name)
+	return ans
 
 class MockCGIFieldStorage(object):
 	pass
+
+
+def test_createDashboard():
+	x = open("dashboard.json").read()
+	response = d.createDashboard("user_dn", x, "ABC country-fleet 123", "true")
+	assert response != None
+
+
 def test_uploadDashboard():
 	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
 	when(dDao).updateSystem("user_dn", any, any).thenReturn(None)
 	when(systemTypeDAO).updateSystemType("user_dn", any, any)
 
-	upload = MockCGIFieldStorage()
+
 	with open('dashboard.json', 'r') as file:
 		x = file.read()
-		upload.file = StringIO(x)
 
-	patch(dDao, "createDashboard", massageThis)
-	when(dDao).getDashboardDetails ("user_dn", any).thenReturn(json.loads(x))
+
+	patch(dDao, "createDashboard", massage_dashboard)
+	patch(dDao, "getDashboardDetails", get_massaged_dashboard)
 	when(rDao).bulkUpdateRecords ("user_dn", any).thenReturn("done")
 	when(rDao).bulkUpdateArchiveRecords ("user_dn", any).thenReturn("done")
 	when(lDao).updateLocation ("user_dn", any).thenReturn({"location_id": "xyz"})
-	when(cDao).updateClassification("user_dn", any, any).thenReturn({" record_id":"xyz"})
+	when(cDao).updateClassification("user_dn", any, any).thenReturn({"record_id":"xyz"})
 	when(hDao).updateHelp("user_dn", any, any).thenReturn(True)
 	# classification, classification_id)
 
+	original_dash = json.loads(x)
 	response = d.uploadDashboard("user_dn", upload)
-	A = [r["system_id"] for r in response["records"]]
-	B = [r["system_id"] for r in response["dashboard"]["records"]]
-
-	unstub()
+	A = get_leaves(original_dash["levels"], "guid")
+	B = get_leaves(response["dashboard"]["levels"], "guid")
 	assert not np.array_equal(A, B)
+
+	A = [response["node_guid_translated"][guid] for guid in get_leaves (original_dash["levels"], "guid")]
+	B = get_leaves(response["dashboard"]["levels"], "guid")
+	assert np.array_equal(A, B)
+
+	# guid old
+	A = get_leaves(original_dash["levels"], "old_guid")
+	B = get_leaves(response["dashboard"]["levels"], "old_guid")
+	assert np. array_equal(A, B)
+	A = get_leaves(original_dash["levels"], "system_id")
+	B = get_leaves(response["dashboard"]["levels"], "system_id")
+	assert not np. array_equal(A, B)
+	A = get_leaves(original_dash["levels"], "systemType_id")
+	B = get_leaves(response["dashboard" ]["levels"], "systemType_id")
+	assert not np. array_equal(A, B)
+
+	A = [r["system_id"] for r in original_dash["records"]]
+	B = [r["system_id"] for r in response["records"]]
+	assert not np. array_equal(A, B)
+	# get the mapped system ID to make sure it's mapped over to records
+	A = [response["nodes_translated_system_id"]["mapped"][rec["system_id"]] for rec
+	in original_dash["records"]]
+	B = [r["system_id"] for r in response["records"]]
+	assert np. array_equal(A, B)
+
+	A = [r["systemType_id" ] for r in original_dash["records"]]
+	B = [r["systemType_id"] for r in response["records"]]
+	assert not np.array_equal(A, B)
+	# get the mapped system ID to make sure it's mapped over to records
+	A = [response["nodes_translated_system_id"]["mapped"][rec["system_id"]] for rec
+	in original_dash["records"]]
+	B = [r["system_id"] for r in response[ "records"]]
+	assert np. array_equal(A, B)
+	unstub()
 
 def test_uploadDashboardMore():
 	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
@@ -149,7 +204,7 @@ def test_uploadDashboardMore():
 		x = file.read()
 		upload.file = StringIO(x)
 
-	patch(dDao, "createDashboard", massageThis)
+	patch(dDao, "createDashboard", massage_dashboard)
 	when(dDao).getDashboardDetails ("user_dn", any).thenReturn(json.loads(x))
 	when(rDao).bulkUpdateRecords ("user_dn", any).thenReturn("done")
 	when(rDao).bulkUpdateArchiveRecords ("user_dn", any).thenReturn("done")
@@ -173,7 +228,7 @@ def test_uploadDashboardError():
 		x = file.read()
 		upload.file = StringIO(x)
 
-	patch(dDao, "createDashboard", massageThis)
+	patch(dDao, "createDashboard", massage_dashboard)
 	when(dDao).getDashboardDetails("user_dn", any).thenReturn(json.loads(x))
 	when(rDao).bulkUpdateRecords("user_dn", any).thenReturn("done")
 	when(rDao).bulkUpdateArchiveRecords("user_dn", any).thenReturn("done")
