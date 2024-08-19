@@ -1,6 +1,7 @@
 from io import StringIO
 import numpy as np
 import traceback
+import copy
 
 from app.src.dao import dashboardDAO as dDao
 from app.src.dao import recordDAO as rDao
@@ -110,13 +111,26 @@ def test_getDashboardDetails():
 
 tugged_dash = [None]
 # copied the first part of  uploadDashboard
-def massage_dashboard(x, dashboard, y):
+def save_dashboard(x, dashboard, y):
 	tugged_dash[0] = dashboard
 	return dashboard
 
 
-def get_massaged_dashboard(user_dn, dashboard_id):
+def get_saved_dashboard(user_dn, dashboard_id):
 	return tugged_dash[0]
+
+tugged_records =[[]]
+def save_record(x, record, record_id):
+	tugged_records[0].append(record)
+
+
+tugged_systems = [[]]
+def save_system(x, system, system_id):
+	tugged_systems[0].append(system)
+
+tugged_system_types = [[]]
+def save_system_type(x, systemType, systemTypeId):
+	tugged_system_types[0].append(systemType)
 
 def get_leaves(obj_list, attribute_name):
 	ans = []
@@ -130,26 +144,57 @@ class MockCGIFieldStorage(object):
 	pass
 
 
-def test_createDashboard():
-	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
+original_dash = [None]
+original_systems = [None]
+original_system_types = [None]
+original_records = [None]
+original_locations = [None]
+original_record_archive = [None]
+
+
+def prepare_base():
 	x = open("dashboard.json").read()
-	original_dash = json.loads(x)
-	when(dDao).getDashboard("user_dn", any).thenReturn(original_dash)
-	when(rDao).getRecords("user_dn", any).thenReturn(original_dash) # use the records key inside the orginal_dash.  the rest please ignore it
-	when(rDao).updateRecord("user_dn", any, any).thenReturn("done") # saves the new records back into ES
-	when(lDao).getLocations("user_dn", any).thenReturn(original_dash["locations"])
+	orig_dash = json.loads(x)
+	original_systems[0] = orig_dash["systems"]
+	original_system_types[0] = orig_dash["systemTypes"]
+	original_records[0] = {"records": orig_dash["records"]}
+	original_locations[0] = orig_dash["locations"]
+	original_record_archive[0] = orig_dash["record_archive"]
+	for fd_name in ["systems", "systemTypes", "records", "locations","record_archive"]:
+		del orig_dash[fd_name]
+	original_dash[0] = orig_dash
+	return x
+
+
+def test_createDashboard():
+	x = prepare_base()
+	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn(23)
+	when(dDao).getDashboard("user_dn", any).thenReturn(original_dash[0])
+	when(rDao).getRecords("user_dn", any).thenReturn(copy.deepcopy(original_records[0])) # use the records key inside the orginal_dash.  the rest please ignore it
+	patch(rDao, "updateRecord", save_record) # saves the new records back into ES
+	when(lDao).getLocations("user_dn", any).thenReturn(original_locations[0])
 	when(lDao).updateLocation("user_dn", any).thenReturn({"location_id": "xyz"})
-	when(cDao).getClassifications("user_dn", any).thenReturn(original_dash["classifications"])
+	when(cDao).getClassifications("user_dn", any).thenReturn(original_dash[0]["classifications"])
 	when(cDao).updateClassification("user_dn", any, any).thenReturn({"record_id": "xyz"})
-	when(hDao).getHelps("user_dn", any).thenReturn(original_dash) # use the helps key inside the orginal_dash.  the rest please ignore it
+	when(hDao).getHelps("user_dn", any).thenReturn({"helps": original_dash[0]["helps"]}) # use the helps key inside the orginal_dash.  the rest please ignore it
 	when(hDao).updateHelp("user_dn", any, any).thenReturn(True)
-	patch(dDao, "createDashboard", massage_dashboard)
+	patch(dDao, "createDashboard", save_dashboard)
+	when(dDao).getSystems("user_dn", any).thenReturn(copy.deepcopy(original_systems[0]))
+	patch(dDao, "updateSystem", save_system)
+	when(systemTypeDAO).getSystemTypes("user_dn", any).thenReturn(copy.deepcopy(original_system_types[0]))
+	patch(systemTypeDAO, "updateSystemType", save_system_type)
 	try:
 		response = d.createDashboard("user_dn", x, "ABC country-fleet 123", "true")
 	except Exception as e:
 		stk = traceback.format_exc()
 		print(stk)
-	assert response != None
+
+	for i in range(len(original_systems[0])):
+		assert [k for k, v in original_systems[0][i].items() if v != tugged_systems[0][i][k]] == ["dashboard_id", "system_id"]
+	for i in range(len(original_system_types[0])):
+		assert [k for k, v in original_system_types[0][0].items() if v != tugged_system_types[0][0][k]] == ['systemType_id', 'dashboard_id']
+	for i in range(len(original_records[0]["records"][0])):
+		assert [k for k, v in original_records[0]["records"][i].items() if v != tugged_records[0][i][k]] == ['dashboard_id', 'exercise', 'record_id', 'system_id']
 	unstub()
 
 def test_uploadDashboard():
@@ -162,8 +207,8 @@ def test_uploadDashboard():
 		x = file.read()
 		upload.file = StringIO(x)
 
-	patch(dDao, "createDashboard", massage_dashboard)
-	patch(dDao, "getDashboardDetails", get_massaged_dashboard)
+	patch(dDao, "createDashboard", save_dashboard)
+	patch(dDao, "getDashboardDetails", get_saved_dashboard)
 	when(rDao).bulkUpdateRecords ("user_dn", any).thenReturn("done")
 	when(rDao).bulkUpdateArchiveRecords ("user_dn", any).thenReturn("done")
 	when(lDao).updateLocation ("user_dn", any).thenReturn({"location_id": "xyz"})
