@@ -140,6 +140,13 @@ def get_leaves(obj_list, attribute_name):
 		ans = ans + get_leaves(r["nodes"], attribute_name)
 	return ans
 
+def traverse(obj_list):
+	ans = []
+	for r in obj_list:
+		ans.append({ k: v for k, v in r.items() if k != 'nodes' })
+		ans = ans + traverse(r["nodes"])
+	return ans
+
 class MockCGIFieldStorage(object):
 	pass
 
@@ -169,7 +176,7 @@ def prepare_base():
 def test_createDashboard():
 	x = prepare_base()
 	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn(23)
-	when(dDao).getDashboard("user_dn", any).thenReturn(original_dash[0])
+	when(dDao).getDashboard("user_dn", any).thenReturn(copy.deepcopy(original_dash[0]))
 	when(rDao).getRecords("user_dn", any).thenReturn(copy.deepcopy(original_records[0])) # use the records key inside the orginal_dash.  the rest please ignore it
 	patch(rDao, "updateRecord", save_record) # saves the new records back into ES
 	when(lDao).getLocations("user_dn", any).thenReturn(original_locations[0])
@@ -189,12 +196,22 @@ def test_createDashboard():
 		stk = traceback.format_exc()
 		print(stk)
 
+	# make sure dashboard change dashboard_id, and levels(nodes) various ids are changed;
+	# system id and systemType id are changed
+	assert [k for k, v in original_dash[0].items() if v != tugged_dash[0][k] and k != "levels"] == ['dashboard_id']
+	for x,y in zip(traverse(original_dash[0]["levels"]), traverse(tugged_dash[0]["levels"])):
+		diff = [k for k,v in x.items() if v != y[k]]  # check each node node_id, guid, system_id, and system type id different
+		assert diff == [] or diff == ['node_id', 'guid'] or diff == ['system_id', 'systemType_id', 'node_id', 'guid']
 	for i in range(len(original_systems[0])):
 		assert [k for k, v in original_systems[0][i].items() if v != tugged_systems[0][i][k]] == ["dashboard_id", "system_id"]
 	for i in range(len(original_system_types[0])):
 		assert [k for k, v in original_system_types[0][0].items() if v != tugged_system_types[0][0][k]] == ['systemType_id', 'dashboard_id']
 	for i in range(len(original_records[0]["records"][0])):
-		assert [k for k, v in original_records[0]["records"][i].items() if v != tugged_records[0][i][k]] == ['dashboard_id', 'exercise', 'record_id', 'system_id']
+		diff2 = [k for k, v in original_records[0]["records"][i].items() if v != tugged_records[0][i][k]]
+		# supposed to have 'dashboard_id', 'exercise', 'record_id', 'system_id' AND systemType_id AND guid different
+		assert (diff2 == ['dashboard_id', 'exercise', 'record_id', 'system_id']),\
+			(('record at ' + str(i) + ' differs' + str(diff2)) + ' instead of dashboard_id, exercise, record_id, system_id')
+
 	unstub()
 
 def test_uploadDashboard():
