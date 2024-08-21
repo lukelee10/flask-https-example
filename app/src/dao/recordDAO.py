@@ -232,7 +232,7 @@ def getLastRecord (user_dn, dashboard_id):
 		}
 	}
 
-	res = esDao.search(user_dn, index=esDao.getESArchiveIndex(), body=query)
+	res = esDao.search(user_dn, index=esDao.getESIndex(), body=query)
 	if res["hits"]["total"]["value"] == 0:
 		return {"noresults": True}
 	else:
@@ -257,7 +257,7 @@ def getLastArchiveRecord(user_dn, dashboard_id) :
 	}
 
 	res = esDao.search(user_dn, index=esDao.getESArchiveIndex(), body=query)
-	if res["hits"][" total"]["value"] == 0:
+	if res["hits"]["total"]["value"] == 0:
 		return {"noresults": True}
 	else:
 		return res["hits"]["hits"][0]["_source"]
@@ -497,7 +497,7 @@ def deleteRecordById(user_dn, record_id):
 	return {"delete": "success"}
 
 
-def getArchive (user_dn, record_id):
+def getArchive(user_dn, record_id):
 	query = {
 		"size": 5000,
 		"sort": [{"update_date.keyword": {"order": "desc", "unmapped_type": "date"}}],

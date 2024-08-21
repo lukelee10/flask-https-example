@@ -132,6 +132,10 @@ tugged_system_types = [[]]
 def save_system_type(x, systemType, systemTypeId):
 	tugged_system_types[0].append(systemType)
 
+tugged_locations = [[]]
+def save_location(x, location_json):
+	tugged_locations[0].append(location_json)
+
 def get_leaves(obj_list, attribute_name):
 	ans = []
 	for r in obj_list:
@@ -180,7 +184,7 @@ def test_createDashboard():
 	when(rDao).getRecords("user_dn", any).thenReturn(copy.deepcopy(original_records[0])) # use the records key inside the orginal_dash.  the rest please ignore it
 	patch(rDao, "updateRecord", save_record) # saves the new records back into ES
 	when(lDao).getLocations("user_dn", any).thenReturn(original_locations[0])
-	when(lDao).updateLocation("user_dn", any).thenReturn({"location_id": "xyz"})
+	patch(lDao, "updateLocation", save_location)
 	when(cDao).getClassifications("user_dn", any).thenReturn(original_dash[0]["classifications"])
 	when(cDao).updateClassification("user_dn", any, any).thenReturn({"record_id": "xyz"})
 	when(hDao).getHelps("user_dn", any).thenReturn({"helps": original_dash[0]["helps"]}) # use the helps key inside the orginal_dash.  the rest please ignore it
@@ -196,6 +200,8 @@ def test_createDashboard():
 		stk = traceback.format_exc()
 		print(stk)
 
+	target_composite_dash = copy.deepcopy(tugged_dash[0])
+	target_composite_dash.update({"systemTypes": tugged_system_types[0], "systems": tugged_systems[0], "locations": tugged_locations[0], "records": tugged_records[0]})
 	# make sure dashboard change dashboard_id, and levels(nodes) various ids are changed;
 	# system id and systemType id are changed
 	assert [k for k, v in original_dash[0].items() if v != tugged_dash[0][k] and k != "levels"] == ['dashboard_id']

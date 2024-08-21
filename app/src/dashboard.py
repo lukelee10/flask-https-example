@@ -75,6 +75,7 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
 
 
         # copy systems
+        oldSystemID2newSystemID = {}
         systems = getSystems(user_dn, copy_id)
         for system in systems:
             system = system
@@ -83,23 +84,23 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
             system_id = str(uuid.uuid4())
             system["system_id"] = system_id
             dashboardDAO.updateSystem(user_dn, system, system_id)
-            system_id_new = system["system_id"]
-            replaceIdsForSystemCopy(dashboard_json["levels"][0], system_id_old, system_id_new)
+            oldSystemID2newSystemID.update({system_id_old: system["system_id"]})
+            replaceIdsForSystemCopy(dashboard_json["levels"][0], system_id_old, system["system_id"])
 
         # copy systemType systems
         systemTypes = sysType.getSystemTypes(user_dn, copy_id)
+        oldSystemTypeID2newSystemTypeID = {}
         for systemType in systemTypes:
             systemType = systemType
             systemType_id_old = systemType["systemType_id"]
             del systemType["systemType_id"]
             systemType["dashboard_id"] = dashboard_id
             systemType = sysType.updateSystemType(user_dn, json.dumps(systemType))
-            systemType_id_new = systemType["systemType_id"]
+            oldSystemTypeID2newSystemTypeID.update({systemType_id_old: systemType["systemType_id"]})
+            replaceIdsForSystemTypeCopy(dashboard_json["levels"][0], systemType_id_old, systemType["systemType_id"])
 
-            replaceIdsForSystemTypeCopy(dashboard_json["levels"][0], systemType_id_old, systemType_id_new)
 
-
-        copyNodeAndsystemGuid(dashboard_json["levels"][0], copy_records)
+        oldNodeGui2New = copyNodeAndsystemGuid(dashboard_json["levels"][0], copy_records)
 
         if copy_records == "true":
             records = r.getRecords(user_dn, copy_id)
@@ -110,9 +111,14 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
                 record["dashboard_id"] = dashboard_id
                 record_id = record["record_series"] + str(uuid.uuid4())  # ES ID of record
                 record["record_id"] = record_id
-                for item in dashboard_json["levels"]:
-                    replaceGuidForSystemRecordCopy(item, record)
-                    rDao.updateRecord(user_dn, record, record_id)
+                if "system_id" in record:
+                    record["system_id"] = oldSystemID2newSystemID[record["system_id"]]
+                if "system_type_id" in record:
+                    record["system_type_id"] = oldSystemTypeID2newSystemTypeID[record["system_type_id"]]
+                if "guid" in record and record["guid"] in oldNodeGui2New:
+                    record["guid"] = oldNodeGui2New[record["guid"]]
+
+                rDao.updateRecord(user_dn, record, record_id)
 
         #copy locations
         locations = l.getLocations(user_dn, copy_id)
@@ -170,7 +176,7 @@ def replaceIdsForSystemCopy(obj, id_old, id_new):
     return mapped_node_ids
 
 
-'''when copying a dashboard, replace itds with new ids for systems'''
+'''when copying a dashboard, replace itds with new ids for system types'''
 def replaceIdsForSystemTypeCopy(obj, id_old, id_new):
     mapped_node_ids = []
     if "nodes" in obj:
@@ -192,7 +198,7 @@ def replaceIdsForSystemTypeCopy(obj, id_old, id_new):
 def replaceGuidForSystemRecordCopy(obj, record):
     if "nodes" in obj:
         for node in obj["nodes"]:
-            if node ["type"] == "system":
+            if node["type"] == "system":
                 record["system_id"] = node["system_id"]
                 if "old_guid" in node and record[ "guid"] == node["old_guid"]:
                     record[ "guid"] = node["guid"]
@@ -712,7 +718,7 @@ def exportDashboard(user_dn, dashboard_id):
     return dashboard
 
 
-def uploadDashboard (user_dn, upload_file):
+def uploadDashboard(user_dn, upload_file):
     global nodes
     global records
     try:
@@ -825,14 +831,14 @@ def uploadDashboard (user_dn, upload_file):
                 record["system_id"] = oldSystemID2newSystemID[record["system_id"]]
                 answer["record_system_id_translated"] += 1
             if "systemType_id" in record:
-                record["systemType_id"] = oldSystemTypeID2newSystemTypeID[record["systemType_id"]]
+                record["system_type_id"] = oldSystemTypeID2newSystemTypeID[record["system_type_id"]]
                 answer["record_systemType_id_translated"] += 1
             if "guid" in record and record ["guid"] in oldNodeGui2New:
                 record["guid"] = oldNodeGui2New[record["guid"]]
                 answer["record_guid_translated"] += 1
 
-            for item in dashboard["levels"]:
-                replaceGuidForSystemRecordCopy(item, record)
+            # for item in dashboard["levels"]:
+            #     replaceGuidForSystemRecordCopy(item, record) replaceGuidForSystemRecordCopy IS WRONG
             # rDao.updateRecord (user_dn, record, record_id)
         rDao.bulkUpdateRecords(user_dn, records)
         answer.update({"recordsSize": len(records), "archivedRecordsSize": len(archivedRecords),
