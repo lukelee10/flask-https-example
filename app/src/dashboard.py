@@ -74,16 +74,14 @@ def createDashboard(user_dn, dashboard, copy_id, copy_records):
         dashboard_json = dashboard_copy
 
 
-        # copy systems
+        # copy systems with new system_id s.  cache the last system_id before replacing it.
         oldSystemID2newSystemID = {}
         systems = getSystems(user_dn, copy_id)
         for system in systems:
-            system = system
             system_id_old = system["system_id"]
             system["dashboard_id"] = dashboard_id
-            system_id = str(uuid.uuid4())
-            system["system_id"] = system_id
-            dashboardDAO.updateSystem(user_dn, system, system_id)
+            system["system_id"] = str(uuid.uuid4())
+            dashboardDAO.updateSystem(user_dn, system, system["system_id"])
             oldSystemID2newSystemID.update({system_id_old: system["system_id"]})
             replaceIdsForSystemCopy(dashboard_json["levels"][0], system_id_old, system["system_id"])
 
