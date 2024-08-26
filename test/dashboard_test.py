@@ -210,15 +210,44 @@ def test_createDashboard():
 		assert diff == [] or diff == ['node_id', 'guid'] or diff == ['system_id', 'systemType_id', 'node_id', 'guid']
 	for i in range(len(original_systems[0])):
 		assert [k for k, v in original_systems[0][i].items() if v != tugged_systems[0][i][k]] == ["dashboard_id", "system_id"]
-	for i in range(len(original_system_types[0])):
-		assert [k for k, v in original_system_types[0][0].items() if v != tugged_system_types[0][0][k]] == ['systemType_id', 'dashboard_id']
-	for i in range(len(original_records[0]["records"][0])):
-		diff2 = [k for k, v in original_records[0]["records"][i].items() if v != tugged_records[0][i][k]]
+	for i, sys_type in enumerate(original_system_types[0]):
+		assert [k for k, v in sys_type.items() if v != tugged_system_types[0][i][k]] == ['dashboard_id', 'systemType_id']
+	for i, rec in enumerate(original_records[0]["records"]):
+		diff2 = [k for k, v in rec.items() if v != tugged_records[0][i][k]]
 		# supposed to have 'dashboard_id', 'exercise', 'record_id', 'system_id' AND systemType_id AND guid different
-		assert (diff2 == ['dashboard_id', 'exercise', 'record_id', 'system_id']),\
-			(('record at ' + str(i) + ' differs' + str(diff2)) + ' instead of dashboard_id, exercise, record_id, system_id')
-
+		assert (diff2 == ['dashboard_id', 'exercise','guid', 'record_id', 'system_id', 'system_type_id']),\
+			(('record at ' + str(i) + ' differs' + str(diff2)) + ' instead of dashboard_id, exercise, guid, record_id, system_id')
+	validate_dashboard(target_composite_dash)
 	unstub()
+
+
+# should have matching records, or no orphaned records
+def validate_dashboard(dashboard_json):
+	ans = {}
+	nodes = traverse(dashboard_json["levels"])
+	system_ids = nodes
+	rec_guids = [r['guid'] for r in dashboard_json["records"]]
+
+	if len(set(rec_guids)) < len(dashboard_json["records"]):
+		tally = dict((i, rec_guids.count(i)) for i in rec_guids)
+		extra_guids = [k for k, v in tally.items() if v > 1]
+		ans.update({'records have duplicate guid': extra_guids})
+	duplicated_rec_guids = []
+	orphaned_rec_guids = []
+	unmatched_recs = []
+	for r in dashboard_json["records"]:
+		matched_nodes = [n for n in nodes if 'guid' in n and n['guid'] == r['guid']]
+		if len(matched_nodes) > 1:
+			duplicated_rec_guids.append(r['guid'])
+		elif len(matched_nodes) < 1:
+			orphaned_rec_guids.append(r['guid'])
+		elif (matched_nodes[0]['system_id'] != r['system_id'] or
+			 matched_nodes[0]['systemType_id'] != r['system_type_id']):
+			unmatched_recs.append(r['guid'])
+	if len(duplicated_rec_guids) > 0 or len(orphaned_rec_guids) > 0 or len(unmatched_recs) > 0:
+		ans.update({'duplicated_rec_guids':duplicated_rec_guids,
+					'orphaned_rec_guids':orphaned_rec_guids, 'unmatched_recs':unmatched_recs})
+	return ans
 
 def test_uploadDashboard():
 	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")

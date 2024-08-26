@@ -34,13 +34,13 @@ def getDashboard():
     return jsonify (dash. getDashboard (user_dn, dashboard_id))
 
 
-@dashboard_blueprint.route('/smart/uploadDashboard', methods=[ 'POST'1)
+@dashboard_blueprint.route('/smart/uploadDashboard', methods=['POST'])
 def uploadDashboard():
     try:
         user_dn = utility.getUserDN(request)
         post = utility.getPost (request)
         dashboard_file = post["dashboard_file"]
-        res = dash. uploadDashboard (user_dn, dashboard_file)
+        res = dash.uploadDashboard(user_dn, dashboard_file)
     except Exception as e:
         traceback.print_exc()
         res = {"FAILED": str(e)}
@@ -64,7 +64,7 @@ def exportDashboard():
     return Response(json.dumps (dashboard), mimetype="application/json", headers={"Content-disposition": "attachment; filename=" + dashboard_id})
 
 # get dashboart and recrods
-@dashboard_blueprint.route('/smart/getOverview', methods=[ 'GET', 'POST'1)
+@dashboard_blueprint.route('/smart/getOverview', methods=[ 'GET', 'POST'])
 def getOverview():
     user_dn = utility.getUserDN(request)
     dashboard_grouping_code = ""
@@ -247,6 +247,7 @@ def smartSearch():
         return output
     else:
         return jsonify(ss.doSearch(user_dn, auth_dn, dashboard_grouping_code, dashboard_id, record_active, exercise, record_state, t
+
 
 @dashboard_blueprint.route('/smart/getBuckyboard', methods=['GET', 'POST'])
 def getBuckyboard():
