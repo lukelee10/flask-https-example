@@ -192,14 +192,18 @@ def test_updateRecord():
         .thenReturn(True)
     # # *
     when(r) \
-        .updateSystemsOfGroup("user_dn", "action",
-                              {'system_id': 0, 'guid': 0, 'record_event_date': None, 'record_source_date': None},
-                              [], False) \
+        .updateSystemsOfGroup("user_dn", "action", {
+            'system_id': 0, 'guid': 0, 'record_event_date': None, 'record_source_date': None,
+            'audit_date': '2024-03-28T12:20:04.797036', 'last_updated_by': 'user_dn', 'system_name': 'test', 'system_type_id': 0,
+            'system_type': 'test'}, str({}), False) \
         .thenReturn(True)
 
-    response = r.updateRecord("user_dn", "create", "update_group", "set_default",
-                              {'system_id': 0, 'guid': 0, 'record_event_date': 0}, True)
-    assert response == True
+    response = r.updateRecord("user_dn", "create", "update_group", "set_default", {
+        'system_id': 0, 'guid': 0, 'record_event_date': None,
+        'record_source_date': None,
+            'audit_date': '2024-03-28T12:20:04.797036', 'last_updated_by': 'user_dn', 'system_name': 'test', 'system_type_id': 0,
+            'system_type': 'test'}, True)
+    assert response
 
 def test_getSystemType():
     response = r. getSystemType({"nodes": []}, "guid")
