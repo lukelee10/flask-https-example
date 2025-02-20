@@ -249,6 +249,16 @@ def validate_dashboard(dashboard_json):
 					'orphaned_rec_guids':orphaned_rec_guids, 'unmatched_recs':unmatched_recs})
 	return ans
 
+
+def test_upload_dashboard_ori():
+	upload = MockCGIFieldStorage()
+	with open('dashboard.json', 'r') as file:
+		x = file.read()
+		upload.file = x
+
+	response = d.upload_dashboard_original("user_dn", upload)
+	assert 'failed' in response
+
 def test_uploadDashboard():
 	when(dDao).getDashboardGroupingCodeCount("user_dn", any).thenReturn("AB")
 	when(dDao).updateSystem("user_dn", any, any).thenReturn(None)

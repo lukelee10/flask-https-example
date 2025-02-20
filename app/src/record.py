@@ -306,7 +306,7 @@ def updateRecord(user_dn, action, update_group, set_default, record, create_trac
                 record = setDefaultRecord(record)
             rDao.updateRecord(user_dn, record, record["record_id"])
 
-        updateSystems0fGroup(user_dn, action, record, json.loads(update_group), set_default)
+        updateSystemsOfGroup(user_dn, action, record, json.loads(update_group), set_default)
 
 
 
@@ -626,7 +626,7 @@ def uploadRecord (user_dn, upload_file, file_type):
 
         # update the systems of the group
         if "update_systems" in record:
-            updateSystems0fGroup(user_dn, "update", existing_record, record[" update_systems"], "false")
+            updateSystemsOfGroup(user_dn, "update", existing_record, record[" update_systems"], "false")
             # TODO: add back in later to check for valid guid
             # for system_record in record[" update_systems"]: #
             #   existing_record[" systems"] = []

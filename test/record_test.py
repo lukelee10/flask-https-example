@@ -165,37 +165,41 @@ def test_setDefaultRecord():
     assert response == {"default_values": {}}
 
 # TODO FIX LATER
-# def test_ updateRecord():
-# when (dDao)
-# •getSystem("user_dn", 0) \
-#    .thenReturn(("dashboard_id": 0, "name": "test"})
-#     : *
-#     when(dDao) \
-#             •getDashboard("user_dn", 0) \
-#         # . thenReturn(("levels": [[]]})
-#     when(r) \
-#             •getSystemType([], 0) \
-#         # . thenReturn(0)
-#     # # #
-#     when(sTDao) \
-#             •getSystemType("user_dn", 0) \
-#         .thenReturn(("name": "test"})
-#     # # #
-#     # when(r)
-#     # . convertDMStoDecimal(('system_id': 0, 'guid': 0, 'record_event_date': None, 'record_source_date': None, 'audit_date': da
-#     #
-#     thenReturn(("record_series": "test", "record_id": 0})
-#      when(rDao)
-#     .createRecord("user_dn", "record", "test") \
-#             thenReturn(True)
-#     # # *
-#     when(r) \
-#         .updateSystemsOfGroup("user_dn", "action",
-#                               ('system_id': 0, 'guid': 0, 'record_event_date': None, 'record_source_date': No
-#                               .thenReturn(True)
+def test_updateRecord():
+    when(dDao) \
+        .getSystem("user_dn", 0) \
+        .thenReturn({"dashboard_id": 0, "name": "test"})
 
-# response = r. updateRecord ("user_dn", "create", "update_group", "set_default", {'system_id': 0, 'guid': 0, 'record_event_date
-# assert response == True
+    when(dDao) \
+        .getDashboard("user_dn", 0) \
+        .thenReturn({"levels": [[]]})
+
+    when(r) \
+        .getSystemType([], 0) \
+        .thenReturn(0)
+
+    # get system types for dashboard 0
+    when(sTDao) \
+        .getSystemTypes("user_dn", 0) \
+        .thenReturn({"name": "test"})
+    # # #
+    when(r) \
+        .convertDMStoDecimal({'system_id': 0, 'guid': 0, 'record_event_date': None, 'record_source_date': None, 'audit_date': None}) \
+        .thenReturn({"record_series": "test", "record_id": 0})
+
+    when(rDao) \
+        .createRecord("user_dn", "record", "test") \
+        .thenReturn(True)
+    # # *
+    when(r) \
+        .updateSystemsOfGroup("user_dn", "action",
+                              {'system_id': 0, 'guid': 0, 'record_event_date': None, 'record_source_date': None},
+                              [], False) \
+        .thenReturn(True)
+
+    response = r.updateRecord("user_dn", "create", "update_group", "set_default",
+                              {'system_id': 0, 'guid': 0, 'record_event_date': 0}, True)
+    assert response == True
 
 def test_getSystemType():
     response = r. getSystemType({"nodes": []}, "guid")

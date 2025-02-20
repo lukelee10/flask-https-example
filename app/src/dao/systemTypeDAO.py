@@ -30,3 +30,6 @@ def getSystemTypes(user_dn, dashboard_id):
 
 def updateSystemType(user_dn, systemType, systemTypeId):
     return True
+
+def getSystemType(user_dn, system_type_id):
+    return {"name": "my-ass"}

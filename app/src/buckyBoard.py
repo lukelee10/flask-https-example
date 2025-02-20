@@ -26,80 +26,80 @@ def getRecord(guid):
             break
     return found_sl
 
+
+def get_paragraph_item(name, title, selected, system_type_id, count):
+    return {"name": name, "title": title, "selected": selected, "systemType": system_type_id, "count": count}
+
+
+def get_paragraph_item_r(rollup, system_type_id, record):
+    try:
+        count = int(record[rollup["field"]])
+    except Exception as e:
+        count = 0
+    selected_flag = rollup["items"]["sum"]["selected"]
+    return get_paragraph_item(rollup["field"], rollup["title"], selected_flag, system_type_id, count)
+
+
+# given rollups directives, a record, and the 2 flags and system_type_id, make an initial paragraph for the given record
+def makeParagraph(rollups, record, rollup_total_ob, rollup_oob, systemType_id):
+    paragraph = []
+    if rollup_total_ob is True:
+        paragraph.append(get_paragraph_item("total_ob",  "Total OB",True, systemType_id,1))
+    if rollup_oob is True:  # determine oob
+        paragraph.append(
+            get_paragraph_item("oob", '00B', True, systemType_id,
+                               1 if "record_operational" in record and record["record_operational"] == "yes" else 0))
+    for rollup in rollups:  # get other rollups
+        if rollup["type"] == "integer":  # if type is integer then sum up all the values from the records
+            para_item = get_paragraph_item_r(rollup, systemType_id, record)
+            if para_item not in paragraph:
+                paragraph.append(para_item)
+        else:  # if not integer then only tally the number of instances
+            for value, item in rollup["items"].items():
+                rollup_item = {"name": rollup["field"], "title": rollup["title"],
+                               "selected": item["selected"], "systemType": systemType_id}
+                rollup_item["name"] = rollup_item["name"] + "_" + value
+                rollup_item["title"] = rollup_item["title"] + " (" + value + ")"
+                if rollup["field"] in record and record[rollup["field"]] == value:
+                    rollup_item["count"] = 1
+                else:
+                    rollup_item["count"] = 0
+
+                if rollup_item not in paragraph:
+                    paragraph.append(rollup_item)
+
+    return paragraph
+
+
 # obj has nodes (more like tree of nodes)
 # group_in_rollup is a boolean
 # rollups are user directives on which fields to roll up or not.
 def setBBValues(user_dn, obj, rollups, group_in_rollup, rollup_oob, rollup_total_ob, alerts):
-    rollup_items = {}
-    record_ids_has_system = [] # collect corresponding records' record_id in given nodes (from obj)
-    record_ids_has_trk_id = [] # subset of above and has tracking_id. aka active records
+    # map of system_type names mapped to the rollup-items.  equate system_type being 
+    rollup_map = {}  # the paragraph header.  and the paragraph being the rollup-itmes
+    record_ids_has_system = []  # collect corresponding records' record_id in given nodes (from obj)
+    record_ids_has_trk_id = []  # subset of above and has tracking_id. aka active records
 
     for node in (obj["nodes"] if "nodes" in obj else []):
         record = None
         if "guid" in node and "system_id" in node:
             record = getRecord(node["guid"])
-            try:
-                if getSystem(node["system_id"]) is not None and "record_id" in record:
-                    record_ids_has_system. append(record["record_id"])
-                    if "tracking_id" in record and record["tracking_id"] is not None:
-                        record_ids_has_trk_id.append(record["record_id"])
-            except Exception as e:
-                traceback.print_exc()
-                print ("ERROR in node: ", node)
+            if getSystem(node["system_id"]) is not None and "record_id" in record:
+                record_ids_has_system. append(record["record_id"])
+                if "tracking_id" in record and record["tracking_id"] is not None:
+                    record_ids_has_trk_id.append(record["record_id"])
 
         # set systemTypesystem values and merge
         if node["type"] == "system" or (node["type"] == "group" and group_in_rollup):
             if record is not None and "noresults" not in record:
-                if "systemType_id" not in node:
-                    node["systemType_id"] = None
-                system_type = getSystemType(node["systemType_id"])
-                if system_type is None:
-                    system_type = {"name": "missing system type in hierarchy", "systemType_id": None}
-                if system_type["name"] not in rollup_items:
-                    rollup_items[system_type["name"]] = {"type": node["type"], "rollups":[]}
-                    if rollup_total_ob is True:
-                        rollup_item = {"name": "total_ob", "title": "Total OB", "selected": True,
-                                       "systemType": system_type["systemType_id"], "count": 1}
-                        rollup_items[system_type["name"]]["rollups"].append(rollup_item)
-
-                    # determine oob
-                    if rollup_oob is True:
-                        rollup_item = {"name": "oob", "title": "00B", "selected": True,
-                                       "systemType": system_type["systemType_id"],
-                                       "count": 1 if "record_operational" in record and record[
-                                            "record_operational"] == "yes" else 0}
-                        rollup_items[system_type["name"]]["rollups"].append(rollup_item)
-
-                    # get other rollups
-                    for rollup in rollups:
-                        if rollup["type"] == "integer":  # if type is integer then sum up all the values from the records
-                            rollup_item = {"name": rollup["field"], "title": rollup["title"],
-                                         "selected": rollup["items"]["sum"]["selected"],
-                                         "systemType": system_type["systemType_id"]}
-                            try:  # if cast to int fails set as zero
-                                rollup_item["count"] = int(record[rollup["field"]])
-                            except Exception as e:
-                                rollup_item["count"] = 0
-
-                            if rollup_item not in rollup_items[system_type["name"]]["rollups"]:
-                                rollup_items[system_type["name"]]["rollups"].append(rollup_item)
-                        else: # if not integer then only tally the number of instances
-                            for value, item in rollup["items"].items():
-                                rollup_item = {"name": rollup["field"], "title": rollup["title"],
-                                               "selected": item["selected"], "systemType": system_type["systemType_id"]}
-                                rollup_item["name"] = rollup_item["name"] + "_" + value
-                                rollup_item["title"] = rollup_item["title"] + " (" + value + ")"
-                                if rollup["field"] in record and record[rollup["field"]] == value:
-                                    rollup_item["count"] = 1
-                                else:
-                                    rollup_item["count"] = 0
-
-                                if rollup_item not in rollup_items[system_type["name"]]["rollups"]:
-                                    rollup_items[system_type["name"]]["rollups"].append(rollup_item)
-
+                systemType_id = node["systemType_id"] if "systemType_id" in node else None
+                system_type_name = getSystemType(systemType_id)["name"] if systemType_id is not None else "missing system type in hierarchy"
+                if system_type_name not in rollup_map:  # initialize the paragraph (rollup items)
+                    paragraph = makeParagraph(rollups, record, rollup_total_ob, rollup_oob, systemType_id)
+                    rollup_map[system_type_name] = {"type": node["type"], "rollups": paragraph}
                 else:
 
-                    for rollup_item in rollup_items[system_type["name"]]["rollups"]:
+                    for rollup_item in rollup_map[system_type_name]["rollups"]:
                         if rollup_item["name"] == "oob":
                             if "record_operational" in record and record["record_operational"] == "yes":
                                 rollup_item["count"] = rollup_item["count"] + 1
@@ -129,23 +129,23 @@ def setBBValues(user_dn, obj, rollups, group_in_rollup, rollup_oob, rollup_total
 
         if node["type"] != "system": #not at the
             incoming_rollup_list = setBBValues(user_dn, node, rollups, group_in_rollup, rollup_oob, rollup_total_ob, alerts)
-            # merge incoming rollup_items with current rollup_items
+            # merge incoming rollup_map with current rollup_map
             record_ids_has_system = record_ids_has_system + node["records"]
             record_ids_has_trk_id = record_ids_has_trk_id + node["active_records"]
 
             for in_name, in_sys_type in incoming_rollup_list.items():
 
-                if in_name not in rollup_items:
-                    rollup_items[in_name] = in_sys_type
+                if in_name not in rollup_map:
+                    rollup_map[in_name] = in_sys_type
                 else:
                     for in_rollup in in_sys_type["rollups"]:
-                        for s_rollup in rollup_items[in_name]["rollups"]:
+                        for s_rollup in rollup_map[in_name]["rollups"]:
                             if in_rollup["name"] == s_rollup["name"]:
                                 s_rollup["count"] = s_rollup["count"] + in_rollup["count"]
 
     obj["records"] = record_ids_has_system
     obj["active_records"] = record_ids_has_trk_id
-    obj["rollup"] = copy.deepcopy(rollup_items)  # need to copy the node other same objects gets changed
+    obj["rollup"] = copy.deepcopy(rollup_map)  # need to copy the node other same objects gets changed
     alerts = copy.deepcopy(alerts)
     # set calculations for alerts
     obj["alerts"] = []
@@ -182,7 +182,7 @@ def setBBValues(user_dn, obj, rollups, group_in_rollup, rollup_oob, rollup_total
 
         obj["alerts"].append(alert)
 
-    return rollup_items
+    return rollup_map
 
 
 
