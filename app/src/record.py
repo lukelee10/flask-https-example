@@ -351,7 +351,7 @@ def updateSystemsOfGroup (user_dn, action, group_record, selected_systems, set_d
                 record["system_name"] = system_obj["name"]
                 system_type_id = getSystemType(dashboard["levels"][0], record["guid"])
                 record["system_type_id"] = system_type_id
-                system_type = systemTypeDA0.getSystemType(user_dn, system_type_id)
+                system_type = systemTypeDAO.getSystemType(user_dn, system_type_id)
                 record["system_type"] = system_type["name"]
 
                 rDao.createRecord(user_dn, record, record_id)

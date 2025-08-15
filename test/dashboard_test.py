@@ -13,6 +13,8 @@ from app.src.dao import systemTypeDAO
 from mockito import when, unstub, any, patch
 import json
 import uuid
+
+
 def test_getDashboard():
 	when (dDao) \
 		.getDashboard("user_dn", "dashboard_id") \

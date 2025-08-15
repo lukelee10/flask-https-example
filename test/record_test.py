@@ -1,10 +1,13 @@
+import pytest
+
 from app.src.dao import dashboardDAO as dDao
 from app.src.dao import recordDAO as rDao
 from app.src.dao import systemTypeDAO as sTDao
 from app.src import record as r
 from app.src import dashboard as d
-from mockito import when
-import datetime
+from mockito import when, arg_that
+from datetime import datetime
+
 
 # def test_removeRecordAttribute():
 # when (rDao) \
@@ -184,7 +187,9 @@ def test_updateRecord():
         .thenReturn({"name": "test"})
     # # #
     when(r) \
-        .convertDMStoDecimal({'system_id': 0, 'guid': 0, 'record_event_date': None, 'record_source_date': None, 'audit_date': None}) \
+        .convertDMStoDecimal({'system_id': 0, 'guid': 0, 'record_event_date': None, 'record_source_date': None,
+                              'audit_date': datetime.now(), 'last_updated_by': 'user_dn', 'system_name': 'test',
+                              'system_type_id': 0, 'system_type': 'my-ass'}) \
         .thenReturn({"record_series": "test", "record_id": 0})
 
     when(rDao) \
@@ -204,6 +209,7 @@ def test_updateRecord():
             'audit_date': '2024-03-28T12:20:04.797036', 'last_updated_by': 'user_dn', 'system_name': 'test', 'system_type_id': 0,
             'system_type': 'test'}, True)
     assert response
+
 
 def test_getSystemType():
     response = r. getSystemType({"nodes": []}, "guid")
